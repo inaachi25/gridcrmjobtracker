@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8" />
+		<meta name="viewport" content="width=device-width,initial-scale=1" />
+		<title>Jobs</title>
+        <link rel="stylesheet" href="assets/css/layout.css" />
+        <link rel="stylesheet" href="assets/css/tracker.css" />
+	</head>
+	<body>
+		<div data-include="partials/header.html"></div>
+		<div data-include="partials/sidebar.html"></div>
+
+        <main class="main-content">
+            <div class="tracker">
+                <!-- Status / counts row (styles moved to tracker.css) -->
+
+                <div class="status-counters">
+                    <div class="status-pill" id="counter-bookmarked">
+                        <div class="count">0</div>
+                        <div class="label">BOOKMARKED</div>
+                    </div>
+                    <div class="status-pill" id="counter-applied">
+                        <div class="count">0</div>
+                        <div class="label">APPLIED</div>
+                    </div>
+                    <div class="status-pill" id="counter-interviewing">
+                        <div class="count">0</div>
+                        <div class="label">INTERVIEWING</div>
+                    </div>
+                    <div class="status-pill" id="counter-negotiating">
+                        <div class="count">0</div>
+                        <div class="label">NEGOTIATING</div>
+                    </div>
+                    <div class="status-pill" id="counter-accepted">
+                        <div class="count">0</div>
+                        <div class="label">ACCEPTED</div>
+                    </div>
+                </div>
+
+                <div class="jobs-controls">
+                    <label style="display:flex;align-items:center;gap:8px"><input type="checkbox"/> <span>0 selected</span></label>
+                    <input class="filter-input" placeholder="Filter Jobs" />
+                    <div class="spacer"></div>
+                    <button id="btn-add" class="green-btn">+ Add a New Job</button>
+                </div>
+
+                <!-- Table -->
+                <div id="table-wrap" class="table-wrap">
+                    <table id="apps-table" class="app-table">
+                        <thead>
+                            <tr>
+                                <th></th>
+                                <th>Job Position</th>
+                                <th>Company</th>
+                                <th>Location</th>
+                                <th>Contact Person</th>
+                                <th>Email Address</th>
+                                <th>Status</th>
+                                <th>Date Applied</th>
+                                <th>Notes</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Modal form -->
+            <div id="app-modal" class="modal hidden">
+                <div class="panel">
+                    <form id="app-form" enctype="multipart/form-data">
+                        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+                            <strong>New Application</strong>
+                            <button type="button" class="modal-close btn ghost">Close</button>
+                        </div>
+                        <div class="form-inline">
+                            <input name="jobtitle" placeholder="Job title" required />
+                            <input name="company" placeholder="Company" required />
+                            <input name="location" placeholder="Location" />
+                            <input name="contactperson" placeholder="Contact person" /> <!-- renamed -->
+                            <input name="email" placeholder="Email address" />
+                            <select name="status">
+                                <option value="">Select Status</option>
+                                <option value="Saved">Saved</option>
+                                <option value="Applied">Applied</option>
+                                <option value="Interview">Interview</option>
+                                <option value="Offer">Offer</option>
+                                <option value="Rejected">Rejected</option>
+                                <option value="Accepted">Accepted</option>
+                            </select>
+                            <input type="date" name="dateApplied" />
+                            <textarea name="notes" placeholder="Notes" style="width:100%"></textarea>
+                            <div>
+                                <label>Attachments</label>
+                                <input type="file" name="attachments" multiple />
+                                <div id="existing-attachments" class="attachment-list"></div>
+                            </div>
+                        </div>
+                        <div class="modal-actions" style="margin-top:8px;">
+                            <button type="submit" class="btn" id="form-submit">Save</button>
+                            <button type="button" id="clear-draft" class="btn ghost">Clear</button>
+                            <button type="button" class="modal-close btn ghost">Cancel</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <script>
+                async function loadJobs() {
+                try {
+                    const res = await fetch('/api/apps');
+                    const jobs = await res.json();
+
+                    const tbody = document.querySelector('#apps-table tbody');
+                    tbody.innerHTML = '';
+
+                    jobs.forEach(job => {
+                    const tr = document.createElement('tr');
+
+                    tr.innerHTML = `
+                        <td><input type="checkbox" /></td>
+                        <td>${job.jobtitle || ''}</td>
+                        <td>${job.company || ''}</td>
+                        <td>${job.location || ''}</td>
+                        <td>${job.contactperson || ''}</td>
+                        <td>${job.email || ''}</td>
+                        <td>${job.status || ''}</td>
+                        <td>${formatDate(job.dateApplied)}</td>
+                        <td>${job.notes || ''}</td>
+                    `;
+
+                    tbody.appendChild(tr);
+                    });
+
+                } catch (err) {
+                    console.error('Failed to load jobs:', err);
+                }
+                }
+
+                function formatDate(dateStr) {
+                if (!dateStr) return '';
+                const d = new Date(dateStr);
+                return d.toLocaleDateString();
+                }
+
+                document.addEventListener('DOMContentLoaded', loadJobs);
+            </script>
+
+        </main>
+
+        <script src="assets/js/partials.js" defer></script>
+        <script src="assets/js/jobs-modal.js" defer></script>
+	</body>
+</html>
+
+<script>
+document.getElementById('app-form').addEventListener('submit', async function(e) {
+    e.preventDefault();
+
+    const form = e.target;
+    const formData = new FormData(form);
+
+    try {
+        const response = await fetch('/api/apps', { // match your server route
+            method: 'POST',
+            body: formData
+        });
+
+        const data = await response.json();
+        console.log('Server response:', data);
+
+        if (response.ok) {
+            alert('Application added successfully!');
+            form.reset();
+            document.getElementById('app-modal').classList.add('hidden');
+            // Optionally: update your jobs table here
+        } else {
+            alert('Error: ' + (data.error || 'Unknown error'));
+        }
+    } catch (err) {
+        console.error('Fetch error:', err);
+        alert('Server error');
+    }
+});
+</script>

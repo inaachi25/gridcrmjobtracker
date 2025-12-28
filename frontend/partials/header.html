@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="UTF-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+		<title>Grid</title>
+		<link rel="stylesheet" href="assets/css/layout.css" />
+	</head>
+	<body>
+		<header class="topbar">
+			<div class="topbar-inner">
+
+				<div class="topbar-center">
+					<form class="topbar-search" role="search">
+						<input type="search" name="q" placeholder="Search" aria-label="Search" />
+						<button type="submit" class="search-btn" aria-label="Search">
+								<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false">
+									<path d="M15.5 14h-.79l-.28-.27A6.471 6.471 0 0016 9.5 6.5 6.5 0 109.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zM9.5 14C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z" fill="currentColor"/>
+								</svg>
+							</button>
+					</form>
+				</div>
+
+				<div class="topbar-right">
+					<div class="profile">
+						<button class="profile-btn" aria-haspopup="true" aria-expanded="false">
+							<span class="profile-avatar-dot" aria-hidden="true"></span>
+							<span class="profile-name">Shaina Mae</span>
+							<span class="profile-caret">▾</span>
+						</button>
+						<div class="profile-menu" role="menu">
+							<button class="logout-btn" role="menuitem">Logout</button>
+						</div>
+					</div>
+				</div>
+			</div>
+		</header>
+
+		// JavaScript for interactivity
+		<script>
+			(function(){
+				// profile dropdown
+				var profileBtn = document.querySelector('.profile-btn');
+				var profileMenu = document.querySelector('.profile-menu');
+				if (profileBtn && profileMenu) {
+					profileBtn.addEventListener('click', function(e){
+						var expanded = profileBtn.getAttribute('aria-expanded') === 'true';
+						profileBtn.setAttribute('aria-expanded', String(!expanded));
+						profileMenu.style.display = expanded ? 'none' : 'block';
+					});
+					// logout (placeholder)
+					var logout = document.querySelector('.logout-btn');
+					logout && logout.addEventListener('click', function(){
+						alert('Logged out (placeholder)');
+					});
+				}
+			})();
+		</script>
+

@@ -1,0 +1,311 @@
+/*
+ * Application Tracker - Readable CSS
+ * Sections:
+ *  - Variables / Theme
+ *  - Toolbar
+ *  - Board & Columns
+ *  - Card
+ *  - Table
+ *  - Forms / Modal
+ *  - Buttons / Utilities
+ */
+
+:root {
+    --accent: #F07167;
+    --muted: #f5f5f5;
+    --card: #ffffff;
+    --border: #e6e6e6;
+}
+
+/* -------------------------------
+     Toolbar
+     ------------------------------- */
+.tracker-toolbar {
+    display: flex;
+    gap: 12px;
+    align-items: center;
+    margin-bottom: 16px;
+}
+
+.tracker-toggle {
+    margin-left: auto;
+}
+
+.top-actions {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+}
+
+/* -------------------------------
+     Board / Columns
+     ------------------------------- */
+.board {
+    display: flex;
+    gap: 12px;
+    align-items: flex-start;
+}
+
+.col {
+    background: var(--muted);
+    flex: 1;
+    min-width: 220px;
+    border-radius: 6px;
+    padding: 8px;
+    height: calc(100vh - 220px);
+    overflow: auto;
+}
+
+.col h3 {
+    margin: 0 0 8px;
+    font-size: 14px;
+}
+
+.col .dropzone {
+    min-height: 40px;
+}
+
+/* -------------------------------
+     Card
+     ------------------------------- */
+.card {
+    background: var(--card);
+    border-radius: 6px;
+    padding: 8px;
+    margin-bottom: 8px;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.06);
+    cursor: grab;
+}
+
+.card .meta {
+    font-size: 12px;
+    color: #666;
+    margin-top: 6px;
+}
+
+.card .attachments {
+    margin-top: 6px;
+}
+
+.card.dragging {
+    opacity: 0.5;
+}
+
+.table-wrap {
+    overflow: auto;
+}
+
+table.app-table {
+    width: 100%;
+    border-collapse: collapse;
+    background: #fff;
+}
+
+table.app-table th,
+table.app-table td {
+    padding: 8px;
+    border-bottom: 1px solid #eee;
+    text-align: left;
+}
+
+/* ensure cells are vertically centered */
+table.app-table th,
+table.app-table td { vertical-align: middle; }
+
+
+.form-inline {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.form-inline input,
+.form-inline select,
+.form-inline textarea {
+    padding: 6px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+}
+
+.modal {
+    position: fixed;
+    left: 0;
+    right: 0;
+    top: 0;
+    bottom: 0;
+    background: rgba(0,0,0,0.4);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.modal .panel {
+    background: #fff;
+    padding: 16px;
+    border-radius: 8px;
+    max-width: 760px;
+    width: 100%;
+}
+
+/* -------------------------------
+     Buttons / Utilities
+     ------------------------------- */
+.btn {
+    background: var(--accent);
+    color: #fff;
+    padding: 8px 12px;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+}
+
+.btn.ghost {
+    background: transparent;
+    color: var(--accent);
+    border: 1px solid var(--accent);
+}
+
+.small {
+    font-size: 12px;
+    padding: 6px 8px;
+}
+
+.hidden {
+    display: none;
+}
+
+.attachment-list {
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+    margin-top: 6px;
+}
+
+.attachment-item {
+    background: #f7f7f7;
+    padding: 6px;
+    border-radius: 4px;
+    font-size: 12px;
+}
+
+/* -------------------------------
+   Jobs page scoped styles (moved from jobs.html)
+   ------------------------------- */
+.status-counters {
+    display: flex;
+    gap: 12px;
+    margin-bottom: 18px;
+    align-items: center;
+    flex-wrap: wrap; /* allow wrapping so counters don't force horizontal scroll */
+    justify-content: flex-start;
+}
+
+.status-pill {
+    background: transparent;
+    border: 1px solid rgba(240,240,240,1);
+    padding: 14px 20px;
+    border-radius: 6px 24px 24px 6px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    flex: 1 1 140px; /* allow shrinking/growing, preferred width 140px */
+    min-width: 110px;
+    box-sizing: border-box;
+}
+
+.status-pill .count { font-size: 18px; font-weight: 700; color: #222; }
+.status-pill .label { font-size: 12px; color: #666; margin-top: 6px; letter-spacing: 1px; }
+.jobs-controls { display:flex; gap:12px; align-items:center; margin-bottom:12px; }
+.jobs-controls .spacer { flex:1 }
+.filter-input { padding:10px 12px; border:1px solid #e6e6e6; border-radius:6px; min-width:260px }
+.green-btn { background:#F07167; color:#fff; border:none; padding:10px 14px; border-radius:8px; cursor:pointer }
+.control-btn { padding:8px 12px; border-radius:8px; border:1px solid #d5d5d5; background:#fff; cursor:pointer }
+.app-table { width:100%; border-collapse:collapse; background:#fff }
+.app-table th, .app-table td { padding:12px 10px; border-bottom:1px solid #eee; text-align:left }
+
+/* Align action buttons to the right and style as real buttons */
+.app-table td.col-actions { display:flex; gap:8px; align-items:center; justify-content:flex-end; min-width:120px }
+.app-table td.col-actions .control-btn {
+    padding:6px 10px;
+    border-radius:10px;
+    border:1px solid #000; /* solid black border as requested */
+    background:#f6f8f9;
+    color:#333;
+    font-size:13px;
+    cursor:pointer;
+    transition: background-color 0.12s ease, transform 0.08s ease, box-shadow 0.12s ease;
+}
+.app-table td.col-actions .control-btn + .control-btn { margin-left:6px; }
+.app-table td.col-actions .control-btn:hover { background:#eef3f5; transform:translateY(-1px); box-shadow:0 4px 10px rgba(0,0,0,0.04); }
+.app-table td.col-actions .control-btn:active { transform:translateY(0); box-shadow:none; }
+.app-table td.col-actions .edit-job {
+    background: #0f6b4a; /* green background */
+    color: #fff;
+    border: 1px solid #000;
+    border-radius:10px;
+}
+.app-table td.col-actions .edit-job:hover { background: #0d5a3f; }
+.app-table td.col-actions .delete-job {
+    background: #c0392b; /* red background */
+    color: #fff;
+    border: 1px solid #000;
+    border-radius:10px;
+}
+.app-table td.col-actions .delete-job:hover { background: #a83224; }
+.app-table td.col-actions .control-btn:focus { outline:3px solid rgba(15,107,74,0.08); outline-offset:2px; }
+
+/* modal clear button spacing */
+.modal .panel .modal-actions { display:flex; gap:8px; justify-content:flex-end; align-items:center }
+
+/* Action buttons (Edit / Delete) in table rows */
+.app-table td.col-actions { vertical-align: middle; display:flex; gap:0; align-items:center; }
+.app-table td.col-actions .control-btn {
+    padding: 6px 10px;
+    border: none;
+    background: transparent;
+    color: #333;
+    font-size: 13px;
+    cursor: pointer;
+    transition: background-color 0.12s ease;
+    border-radius: 0;
+    margin: 0;
+}
+/* light divider between buttons to create an 'invisible border' tabular look */
+.app-table td.col-actions .control-btn + .control-btn {
+    border-left: 1px solid rgba(0,0,0,0.06);
+    padding-left: 12px;
+}
+.app-table td.col-actions .control-btn:hover { background: rgba(0,0,0,0.03); }
+.app-table td.col-actions .edit-job { color: #0f6b4a; }
+.app-table td.col-actions .delete-job { color: #c0392b; }
+.app-table td.col-actions .control-btn:focus { outline: 3px solid rgba(15,107,74,0.08); outline-offset: 2px; }
+
+/* colored divider and subtle border colors */
+.app-table td.col-actions .control-btn + .control-btn { border-left: 1px solid rgba(0,0,0,0.06); }
+/* prefer a green divider near edit and red near delete for clarity */
+.app-table td.col-actions .edit-job { color: #0f6b4a; }
+.app-table td.col-actions .delete-job { color: #c0392b; }
+.app-table td.col-actions .delete-job { border-left-color: rgba(192,57,43,0.14); }
+.app-table td.col-actions .edit-job { border-right: 1px solid rgba(15,107,74,0.12); }
+
+/* slightly stronger header divider to read as a table */
+table.app-table thead th { border-bottom: 2px solid rgba(0,0,0,0.06); }
+
+/* Final overrides: ensure Edit/Delete are filled buttons with black border and hover = #F07167 */
+.app-table td.col-actions .edit-job {
+    background: #0f6b4a !important;
+    color: #fff !important;
+    border: 1px solid #000 !important;
+}
+.app-table td.col-actions .delete-job {
+    background: #c0392b !important;
+    color: #fff !important;
+    border: 1px solid #000 !important;
+}
+.app-table td.col-actions .edit-job:hover,
+.app-table td.col-actions .delete-job:hover,
+.app-table td.col-actions .control-btn:hover {
+    background: #F07167 !important;
+    color: #fff !important;
+}
+

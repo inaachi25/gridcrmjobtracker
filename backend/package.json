@@ -1,0 +1,22 @@
+{
+  "name": "crmjobtracker-server",
+  "version": "1.0.0",
+  "description": "Simple Express API for CRMJobTracker (MySQL CRUD)",
+  "main": "index.js",
+  "scripts": {
+    "dev": "node index.js"
+  },
+  "dependencies": {
+    "cors": "^2.8.5",
+    "dotenv": "^16.0.0",
+    "express": "^4.18.2",
+    "multer": "^1.4.5-lts.1",
+    "mysql2": "^3.2.0"
+  },
+  "devDependencies": {
+    "nodemon": "^3.1.11"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC"
+}

@@ -1,0 +1,210 @@
+.sidebar {
+  width: 240px;
+  height: 100vh;
+  background: #F07167;
+  color: #fff;
+  position: fixed;
+  top: 0;
+  left: 0;
+  transition: width 0.2s ease;
+  z-index: 300; /* ensure sidebar stays in front of header */
+}
+
+/* Main content shifts right to make room for sidebar */
+.main-content {
+  margin-left: 240px;
+  padding: 20px;
+  transition: margin-left 0.2s ease;
+}
+
+/* When sidebar is collapsed the main content shrinks its left margin */
+.sidebar.collapsed ~ .main-content,
+.sidebar.collapsed + .main-content {
+  margin-left: 64px;
+}
+
+/* Topbar */
+
+.topbar {
+  position: fixed;
+  top: 0;
+  left: 240px; /* sit to the right of the sidebar */
+  width: calc(100% - 240px);
+  height: 64px;
+  background: #fff; /* white topbar like mock */
+  color: #333;
+  border-bottom: 1px solid #eee;
+  z-index: 50;
+}
+
+/* When sidebar is collapsed, adjust topbar position */
+body.sidebar-collapsed .topbar {
+  left: 64px;
+  width: calc(100% - 64px);
+}
+
+.topbar-inner {
+  max-width: 1200px;
+  margin: 0 auto;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 16px;
+}
+
+.topbar-search {
+  display: flex;
+  align-items: center;
+}
+
+.topbar-center { flex: 1; display:flex; justify-content:center; }
+
+.topbar-search { width: 640px; max-width: 60%; display:flex; align-items:center; }
+.topbar-search input[type="search"] {
+  width: 100%;
+  padding: 10px 14px;
+  border: 1px solid #e6e6e6;
+  border-radius: 24px 0 0 24px;
+  outline: none;
+  background: #fafafa;
+  color: #333;
+}
+
+.topbar-search input::placeholder { color: #bbb; }
+
+.topbar-search .search-btn {
+  padding: 10px 14px;
+  border: 1px solid #e6e6e6;
+  border-left: none;
+  border-radius: 0 24px 24px 0;
+  background: #fff;
+}
+
+/* Make search icon match sidebar icons */
+.topbar-search .search-btn svg {
+  width: 18px;
+  height: 18px;
+  display: inline-block;
+  vertical-align: middle;
+  color: #888;
+}
+
+.topbar-search .search-btn:hover svg { color: #333; }
+
+
+.profile { position: relative; }
+.profile-btn { background: transparent; border: none; display:flex; align-items:center; gap:8px; cursor:pointer; color:inherit; }
+.profile-avatar-dot { width:28px; height:28px; border-radius:50%; background: #F07167; display:inline-block; }
+.profile-name { color: #333; font-weight:500; }
+.profile-caret { color:#888; margin-left:4px; }
+.profile-menu { position:absolute; right:0; top:56px; background:#fff; border:1px solid #ddd; padding:8px; display:none; color:#333; }
+
+.notif-btn { background:transparent; border:none; font-size:18px; margin-right:12px; cursor:pointer; }
+
+.brand { display:flex; align-items:center; gap:10px; }
+.brand-logo { width:48px; height:40px; background:#f07167; color:#fff; display:flex; align-items:center; justify-content:center; border-radius:6px; font-weight:700; }
+.brand-title { font-weight:700; color:#f07167; margin-left:4px; }
+
+/* push main content down to account for fixed topbar */
+.main-content { padding-top: 80px; }
+
+.sidebar.collapsed ~ .main-content, .sidebar.collapsed + .main-content { padding-top:80px; }
+
+.sidebar-nav ul {
+  list-style: none;
+  padding: 10px 0;
+}
+.sidebar-nav ul {
+  list-style: none;
+  padding: 10px 0;
+}
+
+.sidebar-brand {
+  /* match header height so the brand border aligns with header bottom */
+  height: 64px;
+  padding: 0 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.sidebar-brand .sidebar-logo {
+  display: block;
+  width: 120px;
+  height: auto;
+  margin: 0;
+}
+
+/* Collapsed sidebar state */
+.sidebar.collapsed {
+  width: 64px;
+}
+
+.sidebar.collapsed .sidebar-nav {
+  /* keep nav visible but hide labels so only icons show */
+  display: block;
+}
+
+.sidebar.collapsed .sidebar-brand .sidebar-logo {
+  width: 40px;
+  margin: 12px auto;
+}
+
+/* support body-level collapsed state for layout shifting */
+body.sidebar-collapsed .main-content {
+  margin-left: 64px;
+}
+
+.sidebar.collapsed .nav-item a {
+  justify-content: center;
+  padding: 12px 0;
+}
+
+.sidebar.collapsed .nav-item .icon {
+  margin-right: 0;
+}
+
+.sidebar.collapsed .nav-item .label {
+  display: none;
+}
+
+.sidebar-brand h2 {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 700;
+  color: #fff;
+}
+
+.nav-item a {
+  display: flex;
+  align-items: center;
+  padding: 12px 20px;
+  color: #f0f0f0;
+  text-decoration: none;
+  transition: background 0.2s;
+}
+
+.nav-item a:hover,
+.nav-item.active a {
+  background: #FED9B7;
+  color: #F07167;
+  text-decoration: none;
+}
+
+.icon {
+  margin-right: 12px;
+}
+
+.nav-item .icon svg {
+  width: 18px;
+  height: 18px;
+  display: inline-block;
+  vertical-align: middle;
+}
+
+/* Ensure SVG icons inherit text color */
+.nav-item .icon svg path {
+  fill: currentColor;
+}
