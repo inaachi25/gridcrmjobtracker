@@ -1,20 +1,32 @@
 <!DOCTYPE html>
 <html lang="en">
-	<head>
-		<meta charset="utf-8" />
-		<meta name="viewport" content="width=device-width,initial-scale=1" />
-		<title>Jobs</title>
+    <head>
+        <meta charset="utf-8" />
+        <meta name="viewport" content="width=device-width,initial-scale=1" />
+        <title>Jobs</title>
         <link rel="stylesheet" href="assets/css/layout.css" />
         <link rel="stylesheet" href="assets/css/tracker.css" />
-	</head>
-	<body>
-		<div data-include="partials/header.html"></div>
-		<div data-include="partials/sidebar.html"></div>
+        <style>
+            /* Quick style for the inline dropdown */
+            .status-select {
+                padding: 4px 8px;
+                border-radius: 4px;
+                border: 1px solid #ddd;
+                background-color: #f9f9f9;
+                cursor: pointer;
+            }
+            .status-select:focus {
+                outline: none;
+                border-color: #4CAF50;
+            }
+        </style>
+    </head>
+    <body>
+        <div data-include="partials/header.html"></div>
+        <div data-include="partials/sidebar.html"></div>
 
         <main class="main-content">
             <div class="tracker">
-                <!-- Status / counts row (styles moved to tracker.css) -->
-
                 <div class="status-counters">
                     <div class="status-pill" id="counter-bookmarked">
                         <div class="count">0</div>
@@ -45,7 +57,6 @@
                     <button id="btn-add" class="green-btn">+ Add a New Job</button>
                 </div>
 
-                <!-- Table -->
                 <div id="table-wrap" class="table-wrap">
                     <table id="apps-table" class="app-table">
                         <thead>
@@ -59,18 +70,17 @@
                                 <th>Status</th>
                                 <th>Date Applied</th>
                                 <th>Notes</th>
+                                <th>Action</th>
                             </tr>
                         </thead>
-                        <tbody>
-                        </tbody>
+                        <tbody></tbody>
                     </table>
                 </div>
             </div>
 
-            <!-- Modal form -->
             <div id="app-modal" class="modal hidden">
                 <div class="panel">
-                    <form id="app-form" enctype="multipart/form-data">
+                    <form id="app-form">
                         <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
                             <strong>New Application</strong>
                             <button type="button" class="modal-close btn ghost">Close</button>
@@ -79,10 +89,9 @@
                             <input name="jobtitle" placeholder="Job title" required />
                             <input name="company" placeholder="Company" required />
                             <input name="location" placeholder="Location" />
-                            <input name="contactperson" placeholder="Contact person" /> <!-- renamed -->
+                            <input name="contactperson" placeholder="Contact person" />
                             <input name="email" placeholder="Email address" />
                             <select name="status">
-                                <option value="">Select Status</option>
                                 <option value="Saved">Saved</option>
                                 <option value="Applied">Applied</option>
                                 <option value="Interview">Interview</option>
@@ -92,11 +101,6 @@
                             </select>
                             <input type="date" name="dateApplied" />
                             <textarea name="notes" placeholder="Notes" style="width:100%"></textarea>
-                            <div>
-                                <label>Attachments</label>
-                                <input type="file" name="attachments" multiple />
-                                <div id="existing-attachments" class="attachment-list"></div>
-                            </div>
                         </div>
                         <div class="modal-actions" style="margin-top:8px;">
                             <button type="submit" class="btn" id="form-submit">Save</button>
@@ -109,79 +113,110 @@
 
             <script>
                 async function loadJobs() {
-                try {
-                    const res = await fetch('/api/apps');
-                    const jobs = await res.json();
+                    try {
+                        const response = await fetch(`/api/apps/`);
+                        const jobs = await response.json();
+                        const tbody = document.querySelector('#apps-table tbody');
+                        tbody.innerHTML = '';
 
-                    const tbody = document.querySelector('#apps-table tbody');
-                    tbody.innerHTML = '';
-
-                    jobs.forEach(job => {
-                    const tr = document.createElement('tr');
-
-                    tr.innerHTML = `
-                        <td><input type="checkbox" /></td>
-                        <td>${job.jobtitle || ''}</td>
-                        <td>${job.company || ''}</td>
-                        <td>${job.location || ''}</td>
-                        <td>${job.contactperson || ''}</td>
-                        <td>${job.email || ''}</td>
-                        <td>${job.status || ''}</td>
-                        <td>${formatDate(job.dateApplied)}</td>
-                        <td>${job.notes || ''}</td>
-                    `;
-
-                    tbody.appendChild(tr);
-                    });
-
-                } catch (err) {
-                    console.error('Failed to load jobs:', err);
+                        jobs.forEach(job => {
+                            const tr = document.createElement('tr');
+                            tr.innerHTML = `
+                                <td><input type="checkbox" /></td>
+                                <td>${job.jobtitle || ''}</td>
+                                <td>${job.company || ''}</td>
+                                <td>${job.location || ''}</td>
+                                <td>${job.contactperson || ''}</td>
+                                <td>${job.email || ''}</td>
+                                <td>
+                                    <select onchange="updateStatus(${job.id}, this.value)" class="status-select">
+                                        <option value="Saved" ${job.status === 'Saved' ? 'selected' : ''}>Saved</option>
+                                        <option value="Applied" ${job.status === 'Applied' ? 'selected' : ''}>Applied</option>
+                                        <option value="Interview" ${job.status === 'Interview' ? 'selected' : ''}>Interview</option>
+                                        <option value="Offer" ${job.status === 'Offer' ? 'selected' : ''}>Offer</option>
+                                        <option value="Rejected" ${job.status === 'Rejected' ? 'selected' : ''}>Rejected</option>
+                                        <option value="Accepted" ${job.status === 'Accepted' ? 'selected' : ''}>Accepted</option>
+                                    </select>
+                                </td>
+                                <td>${formatDate(job.dateApplied)}</td>
+                                <td>${job.notes || ''}</td>
+                                <td><button onclick="deleteJob(${job.id})" class="btn ghost" style="color:red">Delete</button></td>
+                            `;
+                            tbody.appendChild(tr);
+                        });
+                    } catch (err) {
+                        console.error('Failed to load jobs:', err);
+                    }
                 }
+
+                // New function to update status in database immediately
+                async function updateStatus(id, newStatus) {
+                    try {
+                        const response = await fetch(`/api/apps/${id}`, {
+                            method: 'PUT',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ status: newStatus })
+                        });
+
+                        if (!response.ok) {
+                            alert('Failed to update status');
+                            loadJobs(); // Refresh to revert UI on error
+                        }
+                    } catch (err) {
+                        console.error('Update failed:', err);
+                    }
+                }
+
+                async function deleteJob(id) {
+                    if (!confirm('Are you sure?')) return;
+                    await fetch(`/api/apps/${id}`, { method: 'DELETE' });
+                    loadJobs();
                 }
 
                 function formatDate(dateStr) {
-                if (!dateStr) return '';
-                const d = new Date(dateStr);
-                return d.toLocaleDateString();
+                    if (!dateStr) return '';
+                    const d = new Date(dateStr);
+                    return d.toLocaleDateString();
                 }
 
-                document.addEventListener('DOMContentLoaded', loadJobs);
+                document.addEventListener('DOMContentLoaded', () => {
+                    loadJobs();
+
+                    const modal = document.getElementById('app-modal');
+                    const btnAdd = document.getElementById('btn-add');
+                    const appForm = document.getElementById('app-form');
+                    const closeBtns = document.querySelectorAll('.modal-close');
+
+                    btnAdd.addEventListener('click', () => modal.classList.remove('hidden'));
+                    
+                    closeBtns.forEach(btn => {
+                        btn.addEventListener('click', () => modal.classList.add('hidden'));
+                    });
+
+                    appForm.addEventListener('submit', async (e) => {
+                        e.preventDefault();
+                        const formData = new FormData(appForm);
+                        const data = Object.fromEntries(formData.entries());
+
+                        try {
+                            const response = await fetch('/api/apps', {
+                                method: 'POST',
+                                headers: { 'Content-Type': 'application/json' },
+                                body: JSON.stringify(data)
+                            });
+
+                            if (response.ok) {
+                                modal.classList.add('hidden');
+                                appForm.reset();
+                                loadJobs();
+                            }
+                        } catch (err) {
+                            console.error('Save failed:', err);
+                        }
+                    });
+                });
             </script>
-
         </main>
-
         <script src="assets/js/partials.js" defer></script>
-        <script src="assets/js/jobs-modal.js" defer></script>
-	</body>
+    </body>
 </html>
-
-<script>
-document.getElementById('app-form').addEventListener('submit', async function(e) {
-    e.preventDefault();
-
-    const form = e.target;
-    const formData = new FormData(form);
-
-    try {
-        const response = await fetch('/api/apps', { // match your server route
-            method: 'POST',
-            body: formData
-        });
-
-        const data = await response.json();
-        console.log('Server response:', data);
-
-        if (response.ok) {
-            alert('Application added successfully!');
-            form.reset();
-            document.getElementById('app-modal').classList.add('hidden');
-            // Optionally: update your jobs table here
-        } else {
-            alert('Error: ' + (data.error || 'Unknown error'));
-        }
-    } catch (err) {
-        console.error('Fetch error:', err);
-        alert('Server error');
-    }
-});
-</script>

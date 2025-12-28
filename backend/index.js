@@ -4,31 +4,32 @@ const dotenv = require('dotenv');
 const cors = require('cors');
 
 dotenv.config();
-const app = express();
-const PORT = process.env.PORT || 3000;
 
+// 1. INITIALIZE APP FIRST
+const app = express(); 
+const PORT = 3001; 
+
+// 2. MIDDLEWARES (Must come after 'app' is initialized)
 app.use(cors());
 app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
 
-// serve uploads statically
-const uploadsDir = process.env.UPLOAD_DIR || path.join(__dirname, 'uploads');
-app.use('/uploads', express.static(uploadsDir));
+// 3. API ROUTES
+const appsRouter = require('./routes/apps');
+app.use('/api/apps', appsRouter);
 
-// routes
-const apps = require('./routes/apps');
-app.use('/api/apps', apps);
-
-// serve frontend static files (so API + frontend can run from same server)
+// 4. SERVE STATIC FILES
 const frontendDir = path.join(__dirname, '..', 'frontend');
 app.use(express.static(frontendDir));
 
-// fallback to frontend/index.html for SPA-like routes (optional)
-app.get('*', (req, res, next) => {
-	if (req.path.startsWith('/api/') || req.path.startsWith('/uploads/')) return next();
-	res.sendFile(path.join(frontendDir, 'index.html'));
+// 5. FALLBACK
+app.get('*', (req, res) => {
+    if (req.path.startsWith('/api')) {
+        return res.status(404).json({ error: 'API route not found' });
+    }
+    res.sendFile(path.join(frontendDir, 'index.html'));
 });
 
-app.get('/', (req, res) => res.json({ok:true}));
-
-app.listen(PORT, () => console.log('API server listening on port', PORT));
+// START SERVER
+app.listen(PORT, () => {
+    console.log(`Server is running at http://localhost:${PORT}`);
+});
