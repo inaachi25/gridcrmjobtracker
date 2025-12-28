@@ -7,15 +7,23 @@ dotenv.config();
 
 // 1. INITIALIZE APP FIRST
 const app = express(); 
-const PORT = 3001; 
+const PORT = 3002; 
 
-// 2. MIDDLEWARES (Must come after 'app' is initialized)
+// 2. MIDDLEWARES (Essential for reading form data)
 app.use(cors());
 app.use(express.json());
+app.use(express.urlencoded({ extended: true })); // Added to help parse form data
 
 // 3. API ROUTES
 const appsRouter = require('./routes/apps');
+const contactsRouter = require('./routes/contacts');
+const resourceRoutes = require('./routes/resources');
+const dashboardRoutes = require('./routes/dashboard');
+
 app.use('/api/apps', appsRouter);
+app.use('/api/contacts', contactsRouter); 
+app.use('/api/resources', resourceRoutes);
+app.use('/api/dashboard', dashboardRoutes);
 
 // 4. SERVE STATIC FILES
 const frontendDir = path.join(__dirname, '..', 'frontend');
@@ -32,4 +40,6 @@ app.get('*', (req, res) => {
 // START SERVER
 app.listen(PORT, () => {
     console.log(`Server is running at http://localhost:${PORT}`);
+    console.log(`Jobs API: http://localhost:${PORT}/api/apps`);
+    console.log(`Contacts API: http://localhost:${PORT}/api/contacts`);
 });
