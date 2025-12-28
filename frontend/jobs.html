@@ -1,222 +1,325 @@
 <!DOCTYPE html>
 <html lang="en">
-    <head>
-        <meta charset="utf-8" />
-        <meta name="viewport" content="width=device-width,initial-scale=1" />
-        <title>Jobs</title>
-        <link rel="stylesheet" href="assets/css/layout.css" />
-        <link rel="stylesheet" href="assets/css/tracker.css" />
-        <style>
-            /* Quick style for the inline dropdown */
-            .status-select {
-                padding: 4px 8px;
-                border-radius: 4px;
-                border: 1px solid #ddd;
-                background-color: #f9f9f9;
-                cursor: pointer;
-            }
-            .status-select:focus {
-                outline: none;
-                border-color: #4CAF50;
-            }
-        </style>
-    </head>
-    <body>
-        <div data-include="partials/header.html"></div>
-        <div data-include="partials/sidebar.html"></div>
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>Jobs Tracker</title>
+    <link rel="stylesheet" href="assets/css/layout.css" />
+    <link rel="stylesheet" href="assets/css/tracker.css" />
+    <style>
+        .status-select {
+            padding: 4px 8px;
+            border-radius: 4px;
+            border: 1px solid #ddd;
+            background-color: #f9f9f9;
+            cursor: pointer;
+            font-size: 14px;
+        }
+        .status-select:focus { outline: none; border-color: #4CAF50; }
+        
+        .action-btns { display: flex; gap: 5px; }
+        
+        .btn-delete {
+            color: #ff4d4d; border: 1px solid #ff4d4d; background: transparent;
+            padding: 4px 8px; border-radius: 4px; cursor: pointer;
+        }
+        .btn-delete:hover { background: #ff4d4d; color: white; }
 
-        <main class="main-content">
-            <div class="tracker">
-                <div class="status-counters">
-                    <div class="status-pill" id="counter-bookmarked">
-                        <div class="count">0</div>
-                        <div class="label">BOOKMARKED</div>
-                    </div>
-                    <div class="status-pill" id="counter-applied">
-                        <div class="count">0</div>
-                        <div class="label">APPLIED</div>
-                    </div>
-                    <div class="status-pill" id="counter-interviewing">
-                        <div class="count">0</div>
-                        <div class="label">INTERVIEWING</div>
-                    </div>
-                    <div class="status-pill" id="counter-negotiating">
-                        <div class="count">0</div>
-                        <div class="label">NEGOTIATING</div>
-                    </div>
-                    <div class="status-pill" id="counter-accepted">
-                        <div class="count">0</div>
-                        <div class="label">ACCEPTED</div>
-                    </div>
-                </div>
+        .btn-edit {
+            color: #2196F3; border: 1px solid #2196F3; background: transparent;
+            padding: 4px 8px; border-radius: 4px; cursor: pointer;
+        }
+        .btn-edit:hover { background: #2196F3; color: white; }
 
-                <div class="jobs-controls">
-                    <label style="display:flex;align-items:center;gap:8px"><input type="checkbox"/> <span>0 selected</span></label>
-                    <input class="filter-input" placeholder="Filter Jobs" />
-                    <div class="spacer"></div>
-                    <button id="btn-add" class="green-btn">+ Add a New Job</button>
-                </div>
+        .btn-bulk-delete {
+            background: #ff4d4d; color: white; border: none; padding: 8px 12px;
+            border-radius: 4px; cursor: pointer; margin-left: 10px; display: none;
+        }
 
-                <div id="table-wrap" class="table-wrap">
-                    <table id="apps-table" class="app-table">
-                        <thead>
-                            <tr>
-                                <th></th>
-                                <th>Job Position</th>
-                                <th>Company</th>
-                                <th>Location</th>
-                                <th>Contact Person</th>
-                                <th>Email Address</th>
-                                <th>Status</th>
-                                <th>Date Applied</th>
-                                <th>Notes</th>
-                                <th>Action</th>
-                            </tr>
-                        </thead>
-                        <tbody></tbody>
-                    </table>
-                </div>
+        .pagination-container {
+            display: flex; justify-content: center; align-items: center;
+            gap: 15px; margin-top: 20px; padding-bottom: 20px;
+        }
+        .page-btn { padding: 6px 12px; border: 1px solid #ddd; background: white; cursor: pointer; border-radius: 4px; }
+        .page-btn:disabled { background: #f0f0f0; cursor: not-allowed; color: #999; }
+        .search-group { display: flex; gap: 8px; }
+        .btn-search { background: #2196F3; color: white; border: none; padding: 0 15px; border-radius: 4px; cursor: pointer; }
+    </style>
+</head>
+<body>
+    <div data-include="partials/header.html"></div>
+    <div data-include="partials/sidebar.html"></div>
+
+    <main class="main-content">
+        <div class="tracker">
+            <div class="status-counters">
+                <div class="status-pill" id="counter-bookmarked"><div class="count">0</div><div class="label">BOOKMARKED</div></div>
+                <div class="status-pill" id="counter-applied"><div class="count">0</div><div class="label">APPLIED</div></div>
+                <div class="status-pill" id="counter-interview"><div class="count">0</div><div class="label">INTERVIEW</div></div>
+                <div class="status-pill" id="counter-accepted"><div class="count">0</div><div class="label">ACCEPTED</div></div>
+                <div class="status-pill" id="counter-rejected"><div class="count">0</div><div class="label">REJECTED</div></div>
             </div>
 
-            <div id="app-modal" class="modal hidden">
-                <div class="panel">
-                    <form id="app-form">
-                        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
-                            <strong>New Application</strong>
-                            <button type="button" class="modal-close btn ghost">Close</button>
-                        </div>
-                        <div class="form-inline">
-                            <input name="jobtitle" placeholder="Job title" required />
-                            <input name="company" placeholder="Company" required />
-                            <input name="location" placeholder="Location" />
-                            <input name="contactperson" placeholder="Contact person" />
-                            <input name="email" placeholder="Email address" />
-                            <select name="status">
-                                <option value="Saved">Saved</option>
-                                <option value="Applied">Applied</option>
-                                <option value="Interview">Interview</option>
-                                <option value="Offer">Offer</option>
-                                <option value="Rejected">Rejected</option>
-                                <option value="Accepted">Accepted</option>
+            <div class="jobs-controls">
+                <label style="display:flex;align-items:center;gap:8px">
+                    <input type="checkbox" id="select-all"/> <span>0 selected</span>
+                </label>
+                <button id="btn-bulk-delete" class="btn-bulk-delete">Delete Selected</button>
+                <div class="spacer"></div>
+                <div class="search-group">
+                    <input class="filter-input" id="filter-jobs" placeholder="Search jobs..." />
+                    <button id="btn-search-trigger" class="btn-search">Search</button>
+                </div>
+                <button id="btn-add" class="green-btn" style="margin-left:10px">+ Add New</button>
+            </div>
+
+            <div id="table-wrap" class="table-wrap">
+                <table id="apps-table" class="app-table">
+                    <thead>
+                        <tr>
+                            <th></th>
+                            <th>Job Position</th>
+                            <th>Company</th>
+                            <th>Location</th>
+                            <th>Contact Person</th>
+                            <th>Email Address</th>
+                            <th>Status</th>
+                            <th>Date Applied</th>
+                            <th>Notes</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+            </div>
+
+            <div class="pagination-container">
+                <button class="page-btn" id="prev-page">Previous</button>
+                <span id="page-info">Page 1 of 1</span>
+                <button class="page-btn" id="next-page">Next</button>
+            </div>
+        </div>
+
+        <div id="app-modal" class="modal hidden">
+            <div class="panel">
+                <form id="app-form">
+                    <input type="hidden" name="id" id="form-job-id" />
+                    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+                        <strong id="modal-title">New Application</strong>
+                        <button type="button" class="modal-close btn ghost">Close</button>
+                    </div>
+                    <div class="form-inline">
+                        <input name="jobtitle" id="form-jobtitle" placeholder="Job title" required />
+                        <input name="company" id="form-company" placeholder="Company" required />
+                        <input name="location" id="form-location" placeholder="Location" />
+                        <input name="contactperson" id="form-contactperson" placeholder="Contact person" />
+                        <input name="email" id="form-email" placeholder="Email address" />
+                        <select name="status" id="form-status">
+                            <option value="Saved">Saved (Bookmark)</option>
+                            <option value="Applied">Applied</option>
+                            <option value="Interview">Interview</option>
+                            <option value="Accepted">Accepted</option>
+                            <option value="Rejected">Rejected</option>
+                        </select>
+                        <input type="date" name="dateApplied" id="form-dateApplied" />
+                        <textarea name="notes" id="form-notes" placeholder="Notes" style="width:100%"></textarea>
+                    </div>
+                    <div class="modal-actions" style="margin-top:12px;">
+                        <button type="submit" class="btn" id="form-submit">Save changes</button>
+                        <button type="button" class="modal-close btn ghost">Cancel</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <script>
+            let allJobs = [];
+            let filteredJobs = [];
+            let currentPage = 1;
+            const rowsPerPage = 10;
+
+            function updateCounters(jobs) {
+                const counts = { 'Saved': 0, 'Applied': 0, 'Interview': 0, 'Accepted': 0, 'Rejected': 0 };
+                jobs.forEach(job => { if (counts.hasOwnProperty(job.status)) counts[job.status]++; });
+                document.querySelector('#counter-bookmarked .count').textContent = counts['Saved'];
+                document.querySelector('#counter-applied .count').textContent = counts['Applied'];
+                document.querySelector('#counter-interview .count').textContent = counts['Interview'];
+                document.querySelector('#counter-accepted .count').textContent = counts['Accepted'];
+                document.querySelector('#counter-rejected .count').textContent = counts['Rejected'];
+            }
+
+            async function loadJobs() {
+                try {
+                    const response = await fetch('/api/apps/');
+                    allJobs = await response.json();
+                    applySearch();
+                    updateCounters(allJobs);
+                } catch (err) { console.error('Load failed:', err); }
+            }
+
+            function renderTable() {
+                const tbody = document.querySelector('#apps-table tbody');
+                tbody.innerHTML = '';
+                const startIndex = (currentPage - 1) * rowsPerPage;
+                const pageData = filteredJobs.slice(startIndex, startIndex + rowsPerPage);
+
+                pageData.forEach(job => {
+                    const tr = document.createElement('tr');
+                    tr.innerHTML = `
+                        <td><input type="checkbox" class="job-checkbox" data-id="${job.id}" onchange="updateSelectedCount()" /></td>
+                        <td>${job.jobtitle || ''}</td>
+                        <td>${job.company || ''}</td>
+                        <td>${job.location || ''}</td>
+                        <td>${job.contactperson || ''}</td>
+                        <td>${job.email || ''}</td>
+                        <td>
+                            <select onchange="updateStatus(${job.id}, this.value)" class="status-select">
+                                <option value="Saved" ${job.status === 'Saved' ? 'selected' : ''}>Bookmarked</option>
+                                <option value="Applied" ${job.status === 'Applied' ? 'selected' : ''}>Applied</option>
+                                <option value="Interview" ${job.status === 'Interview' ? 'selected' : ''}>Interview</option>
+                                <option value="Accepted" ${job.status === 'Accepted' ? 'selected' : ''}>Accepted</option>
+                                <option value="Rejected" ${job.status === 'Rejected' ? 'selected' : ''}>Rejected</option>
                             </select>
-                            <input type="date" name="dateApplied" />
-                            <textarea name="notes" placeholder="Notes" style="width:100%"></textarea>
-                        </div>
-                        <div class="modal-actions" style="margin-top:8px;">
-                            <button type="submit" class="btn" id="form-submit">Save</button>
-                            <button type="button" id="clear-draft" class="btn ghost">Clear</button>
-                            <button type="button" class="modal-close btn ghost">Cancel</button>
-                        </div>
-                    </form>
-                </div>
-            </div>
+                        </td>
+                        <td>${formatDate(job.dateApplied)}</td>
+                        <td>${job.notes || ''}</td>
+                        <td class="action-btns">
+                            <button onclick="openEditModal(${job.id})" class="btn-edit">Edit</button>
+                            <button onclick="deleteJob(${job.id})" class="btn-delete">Delete</button>
+                        </td>
+                    `;
+                    tbody.appendChild(tr);
+                });
+                updatePaginationUI();
+                updateSelectedCount();
+            }
 
-            <script>
-                async function loadJobs() {
-                    try {
-                        const response = await fetch(`/api/apps/`);
-                        const jobs = await response.json();
-                        const tbody = document.querySelector('#apps-table tbody');
-                        tbody.innerHTML = '';
+            // --- EDIT LOGIC ---
+            function openEditModal(id) {
+                const job = allJobs.find(j => j.id === id);
+                if (!job) return;
 
-                        jobs.forEach(job => {
-                            const tr = document.createElement('tr');
-                            tr.innerHTML = `
-                                <td><input type="checkbox" /></td>
-                                <td>${job.jobtitle || ''}</td>
-                                <td>${job.company || ''}</td>
-                                <td>${job.location || ''}</td>
-                                <td>${job.contactperson || ''}</td>
-                                <td>${job.email || ''}</td>
-                                <td>
-                                    <select onchange="updateStatus(${job.id}, this.value)" class="status-select">
-                                        <option value="Saved" ${job.status === 'Saved' ? 'selected' : ''}>Saved</option>
-                                        <option value="Applied" ${job.status === 'Applied' ? 'selected' : ''}>Applied</option>
-                                        <option value="Interview" ${job.status === 'Interview' ? 'selected' : ''}>Interview</option>
-                                        <option value="Offer" ${job.status === 'Offer' ? 'selected' : ''}>Offer</option>
-                                        <option value="Rejected" ${job.status === 'Rejected' ? 'selected' : ''}>Rejected</option>
-                                        <option value="Accepted" ${job.status === 'Accepted' ? 'selected' : ''}>Accepted</option>
-                                    </select>
-                                </td>
-                                <td>${formatDate(job.dateApplied)}</td>
-                                <td>${job.notes || ''}</td>
-                                <td><button onclick="deleteJob(${job.id})" class="btn ghost" style="color:red">Delete</button></td>
-                            `;
-                            tbody.appendChild(tr);
-                        });
-                    } catch (err) {
-                        console.error('Failed to load jobs:', err);
-                    }
+                document.getElementById('modal-title').textContent = "Edit Application";
+                document.getElementById('form-job-id').value = job.id;
+                document.getElementById('form-jobtitle').value = job.jobtitle || '';
+                document.getElementById('form-company').value = job.company || '';
+                document.getElementById('form-location').value = job.location || '';
+                document.getElementById('form-contactperson').value = job.contactperson || '';
+                document.getElementById('form-email').value = job.email || '';
+                document.getElementById('form-status').value = job.status || 'Saved';
+                document.getElementById('form-notes').value = job.notes || '';
+                
+                // Format date for input type="date" (YYYY-MM-DD)
+                if (job.dateApplied) {
+                    const d = new Date(job.dateApplied);
+                    document.getElementById('form-dateApplied').value = d.toISOString().split('T')[0];
                 }
 
-                // New function to update status in database immediately
-                async function updateStatus(id, newStatus) {
-                    try {
-                        const response = await fetch(`/api/apps/${id}`, {
-                            method: 'PUT',
-                            headers: { 'Content-Type': 'application/json' },
-                            body: JSON.stringify({ status: newStatus })
-                        });
+                document.getElementById('app-modal').classList.remove('hidden');
+            }
 
-                        if (!response.ok) {
-                            alert('Failed to update status');
-                            loadJobs(); // Refresh to revert UI on error
-                        }
-                    } catch (err) {
-                        console.error('Update failed:', err);
-                    }
+            // --- BULK DELETE LOGIC ---
+            async function bulkDelete() {
+                const selected = Array.from(document.querySelectorAll('.job-checkbox:checked')).map(cb => cb.dataset.id);
+                if (selected.length === 0) return;
+                if (!confirm(`Are you sure you want to delete ${selected.length} jobs?`)) return;
+
+                // Loop through and delete each (or update your API to handle bulk)
+                for (const id of selected) {
+                    await fetch(`/api/apps/${id}`, { method: 'DELETE' });
                 }
+                loadJobs();
+            }
 
-                async function deleteJob(id) {
-                    if (!confirm('Are you sure?')) return;
+            function updateSelectedCount() {
+                const checkboxes = document.querySelectorAll('.job-checkbox');
+                const selected = Array.from(checkboxes).filter(cb => cb.checked);
+                document.querySelector('.jobs-controls span').textContent = `${selected.length} selected`;
+                document.getElementById('btn-bulk-delete').style.display = selected.length > 0 ? 'inline-block' : 'none';
+            }
+
+            function applySearch() {
+                const term = document.getElementById('filter-jobs').value.toLowerCase();
+                filteredJobs = allJobs.filter(j => `${j.jobtitle} ${j.company}`.toLowerCase().includes(term));
+                currentPage = 1;
+                renderTable();
+            }
+
+            function updatePaginationUI() {
+                const totalPages = Math.ceil(filteredJobs.length / rowsPerPage) || 1;
+                document.getElementById('page-info').textContent = `Page ${currentPage} of ${totalPages}`;
+                document.getElementById('prev-page').disabled = currentPage === 1;
+                document.getElementById('next-page').disabled = currentPage === totalPages;
+            }
+
+            async function updateStatus(id, status) {
+                await fetch(`/api/apps/${id}`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ status })
+                });
+                loadJobs();
+            }
+
+            async function deleteJob(id) {
+                if (confirm('Delete this job?')) {
                     await fetch(`/api/apps/${id}`, { method: 'DELETE' });
                     loadJobs();
                 }
+            }
 
-                function formatDate(dateStr) {
-                    if (!dateStr) return '';
-                    const d = new Date(dateStr);
-                    return d.toLocaleDateString();
-                }
+            function formatDate(dateStr) {
+                return dateStr ? new Date(dateStr).toLocaleDateString() : '';
+            }
 
-                document.addEventListener('DOMContentLoaded', () => {
-                    loadJobs();
+            document.addEventListener('DOMContentLoaded', () => {
+                loadJobs();
+                document.getElementById('btn-search-trigger').onclick = applySearch;
+                document.getElementById('btn-bulk-delete').onclick = bulkDelete;
+                
+                document.getElementById('prev-page').onclick = () => { if (currentPage > 1) { currentPage--; renderTable(); } };
+                document.getElementById('next-page').onclick = () => { 
+                    if (currentPage < Math.ceil(filteredJobs.length / rowsPerPage)) { currentPage++; renderTable(); } 
+                };
 
-                    const modal = document.getElementById('app-modal');
-                    const btnAdd = document.getElementById('btn-add');
-                    const appForm = document.getElementById('app-form');
-                    const closeBtns = document.querySelectorAll('.modal-close');
+                document.getElementById('select-all').onchange = (e) => {
+                    document.querySelectorAll('.job-checkbox').forEach(cb => cb.checked = e.target.checked);
+                    updateSelectedCount();
+                };
 
-                    btnAdd.addEventListener('click', () => modal.classList.remove('hidden'));
+                const modal = document.getElementById('app-modal');
+                document.getElementById('btn-add').onclick = () => {
+                    document.getElementById('app-form').reset();
+                    document.getElementById('form-job-id').value = "";
+                    document.getElementById('modal-title').textContent = "New Application";
+                    modal.classList.remove('hidden');
+                };
+
+                document.querySelectorAll('.modal-close').forEach(b => b.onclick = () => modal.classList.add('hidden'));
+
+                document.getElementById('app-form').onsubmit = async (e) => {
+                    e.preventDefault();
+                    const formData = new FormData(e.target);
+                    const data = Object.fromEntries(formData.entries());
+                    const id = document.getElementById('form-job-id').value;
                     
-                    closeBtns.forEach(btn => {
-                        btn.addEventListener('click', () => modal.classList.add('hidden'));
+                    const url = id ? `/api/apps/${id}` : '/api/apps';
+                    const method = id ? 'PUT' : 'POST';
+
+                    const res = await fetch(url, {
+                        method: method,
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(data)
                     });
 
-                    appForm.addEventListener('submit', async (e) => {
-                        e.preventDefault();
-                        const formData = new FormData(appForm);
-                        const data = Object.fromEntries(formData.entries());
-
-                        try {
-                            const response = await fetch('/api/apps', {
-                                method: 'POST',
-                                headers: { 'Content-Type': 'application/json' },
-                                body: JSON.stringify(data)
-                            });
-
-                            if (response.ok) {
-                                modal.classList.add('hidden');
-                                appForm.reset();
-                                loadJobs();
-                            }
-                        } catch (err) {
-                            console.error('Save failed:', err);
-                        }
-                    });
-                });
-            </script>
-        </main>
-        <script src="assets/js/partials.js" defer></script>
-    </body>
+                    if (res.ok) {
+                        modal.classList.add('hidden');
+                        loadJobs();
+                    }
+                };
+            });
+        </script>
+    </main>
+    <script src="assets/js/partials.js" defer></script>
+</body>
 </html>
