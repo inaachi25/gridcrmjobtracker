@@ -48,7 +48,7 @@ app.get('*', (req, res) => {
         return res.status(404).json({ error: 'API route not found' });
     }
     // Redirect all UI requests to login.html as the entry point
-    res.sendFile(path.join(frontendDir, 'login.html'));
+    res.sendFile(path.join(frontendDir, 'index.html'));
 });
 
 app.listen(PORT, () => {
