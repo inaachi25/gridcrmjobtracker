@@ -6,6 +6,6 @@ document.addEventListener('click', function (e) {
         // localStorage.removeItem('token'); // Uncomment if using local storage
         
         // 2. Redirect to login
-        window.location.href = 'login.html';
+        window.location.href = 'index.html';
     }
 });
