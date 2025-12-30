@@ -1,18 +1,158 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
+<head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width,initial-scale=1" />
-    <title>Dashboard</title>
+    <title>Dashboard | Job Search CRM</title>
     <link rel="stylesheet" href="assets/css/layout.css" />
-  </head>
-  <body>
-    <!-- header + sidebar will be loaded here -->
+    <link rel="stylesheet" href="assets/css/dashboard.css" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+</head>
+<body>
     <div data-include="partials/header.html"></div>
     <div data-include="partials/sidebar.html"></div>
 
     <main class="main-content">
-      <h1>Dashboard</h1>
+        <h1 class="page-title">Dashboard Overview</h1>
+
+        <div class="dashboard-grid">
+            <div class="stat-box">
+                <h3>Total Applications</h3>
+                <p id="stat-total-apps">0</p>
+            </div>
+            <div class="stat-box">
+                <h3>Total Contacts</h3>
+                <p id="stat-contacts">0</p>
+            </div>
+            <div class="stat-box">
+                <h3>Resources</h3>
+                <p id="stat-resources">0</p>
+            </div>
+            <div class="stat-box">
+                <h3>Interview Rate</h3>
+                <p id="stat-rate">0%</p>
+            </div>
+        </div>
+
+        <div class="charts-row">
+            <div class="card">
+                <h3>App Status</h3>
+                <div id="status-container" class="status-list"></div>
+            </div>
+
+            <div class="card">
+                <h3>Contact Pipeline</h3>
+                <div id="contact-status-container" class="status-list"></div>
+            </div>
+
+            <div class="card">
+                <h3>Recent Activity</h3>
+                <div id="activity-feed" class="activity-feed"></div>
+            </div>
+
+            <div class="card">
+                <h3>Quick Tips</h3>
+                <p style="color: #666; font-size: 0.85rem; line-height: 1.6;">
+                    💡 <strong>Networking:</strong> Follow up with contacts every 5 days to increase response rates by 20%.
+                </p>
+                <hr style="border: 0; border-top: 1px solid #eee; margin: 15px 0;">
+                <p style="color: #666; font-size: 0.85rem; line-height: 1.6;">
+                    🚀 <strong>Focus:</strong> Prioritize applications with "Interview" status to prep early.
+                </p>
+            </div>
+        </div>
+    </main>
+
+    <script>
+            // --- AUTH GUARD (Must be at the top) ---
+            (function() {
+                const isAuthenticated = localStorage.getItem('crm_authenticated');
+                if (isAuthenticated !== 'true') {
+                    // Redirect to login if the "key" isn't found
+                    window.location.href = 'login.html';
+                    return; // Stop execution of the rest of the script
+                }
+            })();
+            // --- END AUTH GUARD ---
+        async function loadDashboard() {
+            try {
+                // 1. Fetch data from your existing endpoints in parallel
+                const [appsRes, contactsRes, resourcesRes] = await Promise.all([
+                    fetch('/api/apps'),
+                    fetch('/api/contacts'),
+                    fetch('/api/resources')
+                ]);
+
+                const apps = await appsRes.json();
+                const contacts = await contactsRes.json();
+                const resources = await resourcesRes.json();
+
+                // 2. UPDATE TOP STAT BOXES
+                document.getElementById('stat-total-apps').innerText = apps.length || 0;
+                document.getElementById('stat-contacts').innerText = contacts.length || 0;
+                document.getElementById('stat-resources').innerText = resources.length || 0;
+
+                // 3. CALC INTERVIEW RATE (Fixed variable name to jobtitle)
+                const interviewCount = apps.filter(job => job.status === 'Interview').length;
+                const rate = apps.length > 0 ? ((interviewCount / apps.length) * 100).toFixed(0) : 0;
+                document.getElementById('stat-rate').innerText = rate + '%';
+
+                // 4. RENDER JOB STATUS LIST
+                const jobContainer = document.getElementById('status-container');
+                const jobOrder = ['Saved', 'Applied', 'Interview', 'Accepted', 'Rejected'];
+                
+                jobContainer.innerHTML = jobOrder.map(label => {
+                    const count = apps.filter(job => job.status === label).length;
+                    return `
+                        <div class="status-item">
+                            <span>${label === 'Saved' ? 'Bookmarked' : label}</span>
+                            <strong>${count}</strong>
+                        </div>
+                    `;
+                }).join('');
+
+                // 5. RENDER CONTACT PIPELINE
+                const contactContainer = document.getElementById('contact-status-container');
+                const contactOrder = ['New', 'Warm', 'Active', 'Inactive'];
+                
+                contactContainer.innerHTML = contactOrder.map(label => {
+                    // Check if your contact schema uses 'relationship_status' or just 'status'
+                    const count = contacts.filter(c => (c.relationship_status || c.status) === label).length;
+                    return `
+                        <div class="status-item">
+                            <span>${label}</span>
+                            <strong>${count}</strong>
+                        </div>
+                    `;
+                }).join('');
+
+                // 6. RENDER RECENT ACTIVITY (Fixed: Changed job.role to job.jobtitle)
+                const activityFeed = document.getElementById('activity-feed');
+                const recentJobs = apps.slice(-5).reverse(); 
+
+                if (recentJobs.length === 0) {
+                    activityFeed.innerHTML = '<p style="color:#999; font-size: 0.8rem;">No recent apps.</p>';
+                } else {
+                    activityFeed.innerHTML = recentJobs.map(job => `
+                        <div class="activity-item" style="border-left: 3px solid #2196F3; padding-left: 10px; margin-bottom: 12px;">
+                            <div>
+                                <p style="margin:2px 0; font-size:0.85rem;">
+                                    <strong>${job.jobtitle || 'Untitled Role'}</strong> at ${job.company || 'Unknown Company'}
+                                </p>
+                                <span class="status-pill-mini" style="font-size: 0.7rem; background: #eee; padding: 2px 6px; border-radius: 4px;">
+                                    ${job.status}
+                                </span>
+                            </div>
+                        </div>
+                    `).join('');
+                }
+
+            } catch (err) {
+                console.error("Dashboard Load Error:", err);
+            }
+        }
+
+        window.onload = loadDashboard;
+    </script>
     <script src="assets/js/partials.js" defer></script>
-  </body>
+</body>
 </html>

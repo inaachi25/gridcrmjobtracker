@@ -49,10 +49,7 @@ Job link
 Contact person
 Email address
 Date applied
-Follow-up date
 Notes
-
-Attachments (JD, screenshots, emails)
 
 B. Contact CRM
 A lightweight relationship manager focused on hiring connections.
@@ -66,27 +63,18 @@ Stored Fields
 Full name
 Company
 Role
-Platform (LinkedIn / Facebook / Email / Event)
 Email address
 Phone (optional)
 LinkedIn profile link
-Notes
+Notes (where we met)
 Relationship status (New, Warm, Active, Inactive)
 
 Features
 Link contacts to job applications
-View interaction histor
 Quick access to stored emails for applying
 
-C. Activities & Interaction Logs
-A simple record of communication.
-Log emails, messages, calls, meetings
-Link activity to a contact or job
 
-Timestamped notes
-Recent activity feed on dashboard
-
-D. Resources Section (Links Only)
+C. Resources Section (Links Only)
 A curated knowledge hub.
 
 Purpose
@@ -104,10 +92,19 @@ Categories (Jobs, Learning, Resume, Tools)
 Title + URL + short description
 No file uploads (links only for simplicity)
 
-E. Dashboard
+D. Dashboard
 A high-level overview of progress.
 Total job applications
 Jobs by status
 Total contacts
 Upcoming follow-ups
 Recent activities
+
+Future
+Optional. Activities & Interaction Logs
+A simple record of communication.
+Log emails, messages, calls, meetings
+Link activity to a contact or job
+
+Timestamped notes
+Recent activity feed on dashboard

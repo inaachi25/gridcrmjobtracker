@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>Login | Job Search CRM</title>
+    <link rel="stylesheet" href="assets/css/layout.css" />
+    <style>
+        body {
+            background: #f4f7f6;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            margin: 0;
+            font-family: 'Inter', system-ui, sans-serif;
+        }
+        .login-card {
+            background: white;
+            padding: 40px;
+            border-radius: 12px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.05);
+            width: 100%;
+            max-width: 400px;
+            text-align: center;
+        }
+        .logo {
+            display: flex;               /* Use flex to center the image */
+            justify-content: center;     /* Centers horizontally */
+            align-items: center;         /* Centers vertically */
+            margin: 0 auto 20px auto;    /* Centers the span itself and adds bottom spacing */
+            width: 280px;                /* Increased width from 200px */
+            height: auto;                /* Let height scale naturally with the image */
+        }
+
+        .logo img {
+            width: 100%;                 /* Makes the image fill the 280px container */
+            height: auto;                /* Keeps the logo proportional */
+            object-fit: contain;         /* Ensures the whole logo is visible without cropping */
+        }
+        h2 { color: #333; margin-bottom: 30px; font-size: 1.5rem; }
+        .form-group { text-align: left; margin-bottom: 20px; }
+        label { display: block; margin-bottom: 8px; font-size: 14px; color: #666; }
+        input {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            font-size: 16px;
+            box-sizing: border-box;
+            transition: border-color 0.2s;
+        }
+        input:focus { outline: none; border-color: #F07167; }
+        .btn-login {
+            width: 100%;
+            background: #F07167;
+            color: white;
+            padding: 14px;
+            border: none;
+            border-radius: 6px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            margin-top: 10px;
+        }
+        .btn-login:hover { background: #1976D2; }
+        .error-msg { color: #ff4d4d; font-size: 14px; margin-top: 15px; display: none; }
+    </style>
+</head>
+<body>
+
+    <div class="login-card">
+        <span class="logo">
+            <img src="assets/images/login-logo.png" class="Grid-Logo">
+        </span>
+        
+        <form id="login-form">
+            <div class="form-group">
+                <label>Email Address</label>
+                <input type="email" id="email" placeholder="name@company.com" required>
+            </div>
+            <div class="form-group">
+                <label>Password</label>
+                <input type="password" id="password" placeholder="••••••••" required>
+            </div>
+            <button type="submit" class="btn-login">Sign In</button>
+            <p id="error-msg" class="error-msg">Invalid email or password.</p>
+        </form>
+    </div>
+
+    <script>
+    document.getElementById('login-form').onsubmit = async (e) => {
+        e.preventDefault();
+        const email = document.getElementById('email').value;
+        const password = document.getElementById('password').value;
+        const errorElement = document.getElementById('error-msg');
+
+        // SECURITY: Replace these with your private credentials
+        const ADMIN_EMAIL = "smaetoti10@gmail.com"; 
+        const ADMIN_PASS = "shelleytotisano123"; 
+
+        if (email === ADMIN_EMAIL && password === ADMIN_PASS) {
+            // Set a session flag to prove you are logged in
+            localStorage.setItem('crm_authenticated', 'true');
+            // Redirect to dashboard
+            window.location.href = 'dashboard.html';
+        } else {
+            errorElement.style.display = 'block';
+            errorElement.textContent = "Access Denied: Unauthorized User.";
+        }
+    };
+</script>

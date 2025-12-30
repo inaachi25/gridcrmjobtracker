@@ -3,10 +3,12 @@
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width,initial-scale=1" />
-    <title>Jobs Tracker</title>
+    <title>Applications Tracker</title>
     <link rel="stylesheet" href="assets/css/layout.css" />
     <link rel="stylesheet" href="assets/css/tracker.css" />
+
     <style>
+        /* Status Dropdown Styling */
         .status-select {
             padding: 4px 8px;
             border-radius: 4px;
@@ -15,37 +17,55 @@
             cursor: pointer;
             font-size: 14px;
         }
-        .status-select:focus { outline: none; border-color: #4CAF50; }
-        
-        .action-btns { display: flex; gap: 5px; }
-        
-        .btn-delete {
-            color: #ff4d4d; border: 1px solid #ff4d4d; background: transparent;
-            padding: 4px 8px; border-radius: 4px; cursor: pointer;
-        }
-        .btn-delete:hover { background: #ff4d4d; color: white; }
+        .status-select:focus { outline: none; border-color: #2196F3; }
 
+        /* Sortable Header UI */
+        .sortable { cursor: pointer; position: relative; transition: color 0.2s; }
+        .sortable:hover { color: #2196F3; }
+        .sortable::after { content: ' ↕'; font-size: 10px; opacity: 0.5; }
+
+        /* Blue/Orange Action Buttons */
+        .action-btns { display: flex; gap: 8px; }
         .btn-edit {
             color: #2196F3; border: 1px solid #2196F3; background: transparent;
-            padding: 4px 8px; border-radius: 4px; cursor: pointer;
+            padding: 4px 10px; border-radius: 4px; cursor: pointer; font-weight: 500;
         }
         .btn-edit:hover { background: #2196F3; color: white; }
-
-        .btn-bulk-delete {
-            background: #ff4d4d; color: white; border: none; padding: 8px 12px;
-            border-radius: 4px; cursor: pointer; margin-left: 10px; display: none;
+        
+        .btn-delete {
+            color: #FF8C00; border: 1px solid #FF8C00; background: transparent;
+            padding: 4px 10px; border-radius: 4px; cursor: pointer; font-weight: 500;
         }
+        .btn-delete:hover { background: #FF8C00; color: white; }
 
-        .pagination-container {
-            display: flex; justify-content: center; align-items: center;
-            gap: 15px; margin-top: 20px; padding-bottom: 20px;
+        /* Integrated Search Bar */
+        .search-group { display: flex; border: 1px solid #ddd; border-radius: 6px; overflow: hidden; background: white; }
+        .filter-input { border: none !important; padding: 8px 12px; outline: none; width: 220px; }
+        .btn-search { background: #2196F3; color: white; border: none; padding: 0 15px; cursor: pointer; transition: background 0.2s; }
+        .btn-search:hover { background: #1976D2; }
+
+        /* Professional Modal Grid */
+        .modal .panel {
+            background: #fff; padding: 25px; border-radius: 12px;
+            max-width: 650px; width: 90%; box-shadow: 0 10px 30px rgba(0,0,0,0.2);
         }
+        .form-grid {
+            display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-top: 15px;
+        }
+        .form-grid input, .form-grid select, .form-grid textarea {
+            padding: 10px; border: 1px solid #ddd; border-radius: 6px; font-size: 14px; width: 100%;
+        }
+        .full-width { grid-column: span 2; }
+        .modal-actions { display: flex; gap: 10px; justify-content: flex-end; margin-top: 20px; }
+
+        /* Pagination & Misc */
+        .pagination-container { display: flex; justify-content: center; align-items: center; gap: 15px; margin-top: 20px; }
         .page-btn { padding: 6px 12px; border: 1px solid #ddd; background: white; cursor: pointer; border-radius: 4px; }
-        .page-btn:disabled { background: #f0f0f0; cursor: not-allowed; color: #999; }
-        .search-group { display: flex; gap: 8px; }
-        .btn-search { background: #2196F3; color: white; border: none; padding: 0 15px; border-radius: 4px; cursor: pointer; }
+        .page-btn:disabled { background: #f0f0f0; color: #999; cursor: not-allowed; }
+        .btn-bulk-delete { background: #ff4d4d; color: white; border: none; padding: 8px 12px; border-radius: 4px; cursor: pointer; display: none; }
     </style>
 </head>
+
 <body>
     <div data-include="partials/header.html"></div>
     <div data-include="partials/sidebar.html"></div>
@@ -61,13 +81,14 @@
             </div>
 
             <div class="jobs-controls">
+                <h2 class="page-title">Applications</h2>
                 <label style="display:flex;align-items:center;gap:8px">
                     <input type="checkbox" id="select-all"/> <span>0 selected</span>
                 </label>
                 <button id="btn-bulk-delete" class="btn-bulk-delete">Delete Selected</button>
                 <div class="spacer"></div>
                 <div class="search-group">
-                    <input class="filter-input" id="filter-jobs" placeholder="Search jobs..." />
+                    <input class="filter-input" id="filter-jobs" placeholder="Search title, company, or status..." />
                     <button id="btn-search-trigger" class="btn-search">Search</button>
                 </div>
                 <button id="btn-add" class="green-btn" style="margin-left:10px">+ Add New</button>
@@ -83,8 +104,8 @@
                             <th>Location</th>
                             <th>Contact Person</th>
                             <th>Email Address</th>
-                            <th>Status</th>
-                            <th>Date Applied</th>
+                            <th class="sortable" onclick="toggleSort('status')">Status</th>
+                            <th class="sortable" onclick="toggleSort('date')">Date Applied</th>
                             <th>Notes</th>
                             <th>Action</th>
                         </tr>
@@ -104,70 +125,115 @@
             <div class="panel">
                 <form id="app-form">
                     <input type="hidden" name="id" id="form-job-id" />
-                    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
-                        <strong id="modal-title">New Application</strong>
-                        <button type="button" class="modal-close btn ghost">Close</button>
+                    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
+                        <strong id="modal-title" style="font-size:1.2rem">Add New Application</strong>
+                        <button type="button" class="modal-close" style="background:none; border:none; font-size:24px; cursor:pointer">&times;</button>
                     </div>
-                    <div class="form-inline">
+                    
+                    <div class="form-grid">
                         <input name="jobtitle" id="form-jobtitle" placeholder="Job title" required />
                         <input name="company" id="form-company" placeholder="Company" required />
                         <input name="location" id="form-location" placeholder="Location" />
                         <input name="contactperson" id="form-contactperson" placeholder="Contact person" />
                         <input name="email" id="form-email" placeholder="Email address" />
                         <select name="status" id="form-status">
-                            <option value="Saved">Saved (Bookmark)</option>
+                            <option value="Saved">Bookmarked</option>
                             <option value="Applied">Applied</option>
                             <option value="Interview">Interview</option>
                             <option value="Accepted">Accepted</option>
                             <option value="Rejected">Rejected</option>
                         </select>
-                        <input type="date" name="dateApplied" id="form-dateApplied" />
-                        <textarea name="notes" id="form-notes" placeholder="Notes" style="width:100%"></textarea>
+                        <div class="full-width">
+                            <label style="font-size:12px; color:#666; margin-bottom:4px; display:block">Date Applied</label>
+                            <input type="date" name="dateApplied" id="form-dateApplied" />
+                        </div>
+                        <textarea name="notes" id="form-notes" class="full-width" placeholder="Notes (Links, reminders, etc.)" rows="3"></textarea>
                     </div>
-                    <div class="modal-actions" style="margin-top:12px;">
-                        <button type="submit" class="btn" id="form-submit">Save changes</button>
-                        <button type="button" class="modal-close btn ghost">Cancel</button>
+
+                    <div class="modal-actions">
+                        <button type="button" class="modal-close btn ghost" style="background:#f0f0f0; border:none; padding:10px 15px; border-radius:4px; cursor:pointer">Cancel</button>
+                        <button type="submit" class="btn" style="background:#2196F3; color:white; border:none; padding:10px 20px; border-radius:4px; cursor:pointer">Save Application</button>
                     </div>
                 </form>
             </div>
         </div>
 
         <script>
+            // --- AUTH GUARD ---
+            (function() {
+                const isAuthenticated = localStorage.getItem('crm_authenticated');
+                if (isAuthenticated !== 'true') {
+                    // If not logged in, kick them back to the login page
+                    window.location.href = 'login.html';
+                }
+            })();
+            // --- END AUTH GUARD ---
+
             let allJobs = [];
             let filteredJobs = [];
             let currentPage = 1;
             const rowsPerPage = 10;
+            
+            // Default Sort Settings
+            let currentSortCol = 'date'; 
+            let isAsc = false; 
 
-            function updateCounters(jobs) {
-                const counts = { 'Saved': 0, 'Applied': 0, 'Interview': 0, 'Accepted': 0, 'Rejected': 0 };
-                jobs.forEach(job => { if (counts.hasOwnProperty(job.status)) counts[job.status]++; });
-                document.querySelector('#counter-bookmarked .count').textContent = counts['Saved'];
-                document.querySelector('#counter-applied .count').textContent = counts['Applied'];
-                document.querySelector('#counter-interview .count').textContent = counts['Interview'];
-                document.querySelector('#counter-accepted .count').textContent = counts['Accepted'];
-                document.querySelector('#counter-rejected .count').textContent = counts['Rejected'];
-            }
+            const statusOrder = { 'Saved': 1, 'Applied': 2, 'Interview': 3, 'Accepted': 4, 'Rejected': 5 };
 
             async function loadJobs() {
                 try {
                     const response = await fetch('/api/apps/');
                     allJobs = await response.json();
-                    applySearch();
+                    applySearchAndSort();
                     updateCounters(allJobs);
                 } catch (err) { console.error('Load failed:', err); }
+            }
+
+            // --- FUNCTIONAL SEARCH & SORT ENGINE ---
+            function applySearchAndSort() {
+                const term = document.getElementById('filter-jobs').value.toLowerCase().trim();
+                
+                // 1. Filter logic
+                filteredJobs = allJobs.filter(j => 
+                    `${j.jobtitle} ${j.company} ${j.status} ${j.location}`.toLowerCase().includes(term)
+                );
+
+                // 2. Sort logic
+                filteredJobs.sort((a, b) => {
+                    let valA, valB;
+                    if (currentSortCol === 'status') {
+                        valA = statusOrder[a.status] || 99;
+                        valB = statusOrder[b.status] || 99;
+                    } else {
+                        valA = a.dateApplied ? new Date(a.dateApplied).getTime() : 0;
+                        valB = b.dateApplied ? new Date(b.dateApplied).getTime() : 0;
+                    }
+
+                    if (isAsc) return valA > valB ? 1 : -1;
+                    else return valA < valB ? 1 : -1;
+                });
+
+                currentPage = 1;
+                renderTable();
+            }
+
+            function toggleSort(column) {
+                if (currentSortCol === column) isAsc = !isAsc;
+                else { currentSortCol = column; isAsc = (column === 'status'); }
+                applySearchAndSort();
             }
 
             function renderTable() {
                 const tbody = document.querySelector('#apps-table tbody');
                 tbody.innerHTML = '';
-                const startIndex = (currentPage - 1) * rowsPerPage;
-                const pageData = filteredJobs.slice(startIndex, startIndex + rowsPerPage);
+                const start = (currentPage - 1) * rowsPerPage;
+                const pageData = filteredJobs.slice(start, start + rowsPerPage);
 
                 pageData.forEach(job => {
                     const tr = document.createElement('tr');
                     tr.innerHTML = `
                         <td><input type="checkbox" class="job-checkbox" data-id="${job.id}" onchange="updateSelectedCount()" /></td>
-                        <td>${job.jobtitle || ''}</td>
+                        <td><strong>${job.jobtitle || ''}</strong></td>
                         <td>${job.company || ''}</td>
                         <td>${job.location || ''}</td>
                         <td>${job.contactperson || ''}</td>
@@ -182,7 +248,7 @@
                             </select>
                         </td>
                         <td>${formatDate(job.dateApplied)}</td>
-                        <td>${job.notes || ''}</td>
+                        <td><small>${job.notes || ''}</small></td>
                         <td class="action-btns">
                             <button onclick="openEditModal(${job.id})" class="btn-edit">Edit</button>
                             <button onclick="deleteJob(${job.id})" class="btn-delete">Delete</button>
@@ -191,65 +257,21 @@
                     tbody.appendChild(tr);
                 });
                 updatePaginationUI();
-                updateSelectedCount();
             }
 
-            // --- EDIT LOGIC ---
-            function openEditModal(id) {
-                const job = allJobs.find(j => j.id === id);
-                if (!job) return;
-
-                document.getElementById('modal-title').textContent = "Edit Application";
-                document.getElementById('form-job-id').value = job.id;
-                document.getElementById('form-jobtitle').value = job.jobtitle || '';
-                document.getElementById('form-company').value = job.company || '';
-                document.getElementById('form-location').value = job.location || '';
-                document.getElementById('form-contactperson').value = job.contactperson || '';
-                document.getElementById('form-email').value = job.email || '';
-                document.getElementById('form-status').value = job.status || 'Saved';
-                document.getElementById('form-notes').value = job.notes || '';
-                
-                // Format date for input type="date" (YYYY-MM-DD)
-                if (job.dateApplied) {
-                    const d = new Date(job.dateApplied);
-                    document.getElementById('form-dateApplied').value = d.toISOString().split('T')[0];
-                }
-
-                document.getElementById('app-modal').classList.remove('hidden');
+            function formatDate(dateStr) {
+                if (!dateStr) return '—';
+                return new Date(dateStr).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
             }
 
-            // --- BULK DELETE LOGIC ---
-            async function bulkDelete() {
-                const selected = Array.from(document.querySelectorAll('.job-checkbox:checked')).map(cb => cb.dataset.id);
-                if (selected.length === 0) return;
-                if (!confirm(`Are you sure you want to delete ${selected.length} jobs?`)) return;
-
-                // Loop through and delete each (or update your API to handle bulk)
-                for (const id of selected) {
-                    await fetch(`/api/apps/${id}`, { method: 'DELETE' });
-                }
-                loadJobs();
-            }
-
-            function updateSelectedCount() {
-                const checkboxes = document.querySelectorAll('.job-checkbox');
-                const selected = Array.from(checkboxes).filter(cb => cb.checked);
-                document.querySelector('.jobs-controls span').textContent = `${selected.length} selected`;
-                document.getElementById('btn-bulk-delete').style.display = selected.length > 0 ? 'inline-block' : 'none';
-            }
-
-            function applySearch() {
-                const term = document.getElementById('filter-jobs').value.toLowerCase();
-                filteredJobs = allJobs.filter(j => `${j.jobtitle} ${j.company}`.toLowerCase().includes(term));
-                currentPage = 1;
-                renderTable();
-            }
-
-            function updatePaginationUI() {
-                const totalPages = Math.ceil(filteredJobs.length / rowsPerPage) || 1;
-                document.getElementById('page-info').textContent = `Page ${currentPage} of ${totalPages}`;
-                document.getElementById('prev-page').disabled = currentPage === 1;
-                document.getElementById('next-page').disabled = currentPage === totalPages;
+            function updateCounters(jobs) {
+                const counts = { 'Saved': 0, 'Applied': 0, 'Interview': 0, 'Accepted': 0, 'Rejected': 0 };
+                jobs.forEach(j => { if (counts.hasOwnProperty(j.status)) counts[j.status]++; });
+                document.querySelector('#counter-bookmarked .count').textContent = counts['Saved'];
+                document.querySelector('#counter-applied .count').textContent = counts['Applied'];
+                document.querySelector('#counter-interview .count').textContent = counts['Interview'];
+                document.querySelector('#counter-accepted .count').textContent = counts['Accepted'];
+                document.querySelector('#counter-rejected .count').textContent = counts['Rejected'];
             }
 
             async function updateStatus(id, status) {
@@ -262,31 +284,51 @@
             }
 
             async function deleteJob(id) {
-                if (confirm('Delete this job?')) {
+                if (confirm('Delete this application?')) {
                     await fetch(`/api/apps/${id}`, { method: 'DELETE' });
                     loadJobs();
                 }
             }
 
-            function formatDate(dateStr) {
-                return dateStr ? new Date(dateStr).toLocaleDateString() : '';
+            function openEditModal(id) {
+                const job = allJobs.find(j => j.id === id);
+                if (!job) return;
+                document.getElementById('form-job-id').value = job.id;
+                document.getElementById('form-jobtitle').value = job.jobtitle;
+                document.getElementById('form-company').value = job.company;
+                document.getElementById('form-location').value = job.location || '';
+                document.getElementById('form-contactperson').value = job.contactperson || '';
+                document.getElementById('form-email').value = job.email || '';
+                document.getElementById('form-status').value = job.status;
+                document.getElementById('form-notes').value = job.notes || '';
+                if (job.dateApplied) document.getElementById('form-dateApplied').value = job.dateApplied.split('T')[0];
+                document.getElementById('modal-title').textContent = "Edit Application";
+                document.getElementById('app-modal').classList.remove('hidden');
+            }
+
+            function updatePaginationUI() {
+                const total = Math.ceil(filteredJobs.length / rowsPerPage) || 1;
+                document.getElementById('page-info').textContent = `Page ${currentPage} of ${total}`;
+                document.getElementById('prev-page').disabled = (currentPage === 1);
+                document.getElementById('next-page').disabled = (currentPage === total);
+            }
+
+            function updateSelectedCount() {
+                const selected = document.querySelectorAll('.job-checkbox:checked').length;
+                document.querySelector('.jobs-controls span').textContent = `${selected} selected`;
+                document.getElementById('btn-bulk-delete').style.display = selected > 0 ? 'inline-block' : 'none';
             }
 
             document.addEventListener('DOMContentLoaded', () => {
                 loadJobs();
-                document.getElementById('btn-search-trigger').onclick = applySearch;
-                document.getElementById('btn-bulk-delete').onclick = bulkDelete;
                 
-                document.getElementById('prev-page').onclick = () => { if (currentPage > 1) { currentPage--; renderTable(); } };
-                document.getElementById('next-page').onclick = () => { 
-                    if (currentPage < Math.ceil(filteredJobs.length / rowsPerPage)) { currentPage++; renderTable(); } 
-                };
+                // Search Event Listeners
+                document.getElementById('btn-search-trigger').onclick = applySearchAndSort;
+                document.getElementById('filter-jobs').addEventListener('keypress', (e) => {
+                    if (e.key === 'Enter') applySearchAndSort();
+                });
 
-                document.getElementById('select-all').onchange = (e) => {
-                    document.querySelectorAll('.job-checkbox').forEach(cb => cb.checked = e.target.checked);
-                    updateSelectedCount();
-                };
-
+                // Modal Control
                 const modal = document.getElementById('app-modal');
                 document.getElementById('btn-add').onclick = () => {
                     document.getElementById('app-form').reset();
@@ -294,28 +336,28 @@
                     document.getElementById('modal-title').textContent = "New Application";
                     modal.classList.remove('hidden');
                 };
-
                 document.querySelectorAll('.modal-close').forEach(b => b.onclick = () => modal.classList.add('hidden'));
 
                 document.getElementById('app-form').onsubmit = async (e) => {
                     e.preventDefault();
-                    const formData = new FormData(e.target);
-                    const data = Object.fromEntries(formData.entries());
+                    const data = Object.fromEntries(new FormData(e.target));
                     const id = document.getElementById('form-job-id').value;
-                    
-                    const url = id ? `/api/apps/${id}` : '/api/apps';
-                    const method = id ? 'PUT' : 'POST';
-
-                    const res = await fetch(url, {
-                        method: method,
+                    await fetch(id ? `/api/apps/${id}` : '/api/apps', {
+                        method: id ? 'PUT' : 'POST',
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify(data)
                     });
+                    modal.classList.add('hidden');
+                    loadJobs();
+                };
 
-                    if (res.ok) {
-                        modal.classList.add('hidden');
-                        loadJobs();
-                    }
+                // Pagination Buttons
+                document.getElementById('prev-page').onclick = () => { if(currentPage > 1) { currentPage--; renderTable(); } };
+                document.getElementById('next-page').onclick = () => { if(currentPage < Math.ceil(filteredJobs.length/rowsPerPage)) { currentPage++; renderTable(); } };
+                
+                document.getElementById('select-all').onchange = (e) => {
+                    document.querySelectorAll('.job-checkbox').forEach(cb => cb.checked = e.target.checked);
+                    updateSelectedCount();
                 };
             });
         </script>

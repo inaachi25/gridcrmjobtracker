@@ -1,19 +1,381 @@
 <!DOCTYPE html>
 <html lang="en">
-	<head>
-		<meta charset="utf-8" />
-		<meta name="viewport" content="width=device-width,initial-scale=1" />
-		<title>Contacts</title>
-		<link rel="stylesheet" href="assets/css/layout.css" />
-	</head>
-	<body>
-		<div data-include="partials/header.html"></div>
-		<div data-include="partials/sidebar.html"></div>
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>Contacts Tracker</title>
+    <link rel="stylesheet" href="assets/css/layout.css" />
+    <link rel="stylesheet" href="assets/css/contacts.css" />
+    <link rel="stylesheet" href="assets/css/tracker.css" />
+</head>
+<body>
+    <div data-include="partials/header.html"></div>
+    <div data-include="partials/sidebar.html"></div>
 
-		<main class="main-content">
-			<h1>Contacts</h1>
-		</main>
+    <main class="main-content">
+        <!-- Status Counters -->
+        <div class="tracker">
+            <div class="status-counters">
+                <div class="status-pill" id="counter-new" style="cursor: pointer;">
+                    <div class="count">0</div>
+                    <div class="label">NEW</div>
+                </div>
+                <div class="status-pill" id="counter-warm" style="cursor: pointer;">
+                    <div class="count">0</div>
+                    <div class="label">WARM</div>
+                </div>
+                <div class="status-pill" id="counter-active" style="cursor: pointer;">
+                    <div class="count">0</div>
+                    <div class="label">ACTIVE</div>
+                </div>
+                <div class="status-pill" id="counter-inactive" style="cursor: pointer;">
+                    <div class="count">0</div>
+                    <div class="label">INACTIVE</div>
+                </div>
+            </div>
 
-		<script src="assets/js/partials.js" defer></script>
-	</body>
+            <div class="jobs-controls">
+                <h1 class="page-title">Contacts</h1>
+                <div class="spacer"></div>
+                <button id="btn-add-contact" class="purple-btn">+ Contact</button>
+            </div>
+
+            <div class="jobs-controls search-filter-bar" style="margin-top: 20px; background: #fff; padding: 15px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.05);">
+                <div class="search-wrapper" style="flex: 2;">
+                    <input type="text" id="contact-search" placeholder="Search by name, company, or role..." style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 5px;" />
+                </div>
+                
+                <select id="filter-status" style="flex: 1; padding: 10px; border: 1px solid #ddd; border-radius: 5px; margin-left: 10px;">
+                    <option value="All">All Statuses</option>
+                    <option value="New">New</option>
+                    <option value="Warm">Warm</option>
+                    <option value="Active">Active</option>
+                    <option value="Inactive">Inactive</option>
+                </select>
+
+                <div class="pagination-controls" style="flex: 1; display: flex; align-items: center; justify-content: flex-end; gap: 10px;">
+                    <button id="prev-page" class="btn-discard" style="padding: 5px 12px;">&larr;</button>
+                    <span id="page-info" style="font-weight: bold; font-size: 0.9rem;">Page 1</span>
+                    <button id="next-page" class="btn-discard" style="padding: 5px 12px;">&rarr;</button>
+                </div>
+            </div>
+
+            <div id="contacts-grid" class="contacts-card-grid" style="margin-top: 20px;"></div>
+            </div>
+
+        <!-- Save a New Contact Modal Form -->
+        <div id="contact-modal" class="modal hidden">
+            <div class="panel contact-panel-fixed">
+                <form id="contact-form" onsubmit="event.preventDefault();">
+                    <input type="hidden" name="id" id="contact-id" />
+                    <div class="modal-header-centered">
+                        <h2>Save New Contact</h2>
+                    </div>
+                    
+                    <div class="modal-single-container">
+                        <div class="form-row-two">
+                            <div class="input-group">
+                                <label>First Name <span>Required</span></label>
+                                <input name="firstname" placeholder="i.e: John" required />
+                            </div>
+                            <div class="input-group">
+                                <label>Last Name <span>Required</span></label>
+                                <input name="lastname" placeholder="i.e: Smith" required />
+                            </div>
+                        </div>
+
+                        <div class="form-row-full">
+                            <label>Job Title</label>
+                            <input name="jobtitle" placeholder="i.e: CEO" />
+                        </div>
+
+                        <div class="form-row-two">
+                            <div class="input-group">
+                                <label>Company</label>
+                                <input name="company" placeholder="+ select company(s)" />
+                            </div>
+                            <div class="input-group">
+                                <label>Status</label>
+                                <select name="relationship_status">
+                                    <option value="New">New</option>
+                                    <option value="Warm">Warm</option>
+                                    <option value="Active">Active</option>
+                                    <option value="Inactive">Inactive</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="form-row-two">
+                            <div class="input-group">
+                                <label>Email address</label>
+                                <input type="email" name="email" placeholder="+ add email" />
+                            </div>
+                            <div class="input-group">
+                                <label>Phone (optional)</label>
+                                <input type="tel" name="phone" placeholder="+ add phone" />
+                            </div>
+                        </div>
+
+                        <div class="form-row-full">
+                            <label>LinkedIn profile link</label>
+                            <input name="linkedin" placeholder="linkedin.com/in/handle" />
+                        </div>
+
+                        <div class="form-row-full">
+                            <label>Notes (where we met)</label>
+                            <textarea name="notes" placeholder="Notes..." rows="3"></textarea>
+                        </div>
+                    </div>
+
+                    <div class="modal-footer-simple">
+                        <button type="button" class="btn-discard modal-close">Discard</button>
+                        <button type="submit" class="btn-create-purple">Save</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <div id="view-contact-modal" class="modal hidden">
+            <div class="panel contact-panel-fixed">
+                <div class="modal-header-centered">
+                    <h2>Contact Details</h2>
+                </div>
+                <div id="contact-details-content" class="modal-single-container"></div>
+                <div class="modal-footer-simple">
+                    <button type="button" class="btn-discard view-modal-close">Close</button>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        // DOM Elements
+        const contactModal = document.getElementById('contact-modal');
+        const contactForm = document.getElementById('contact-form');
+        const contactsGrid = document.getElementById('contacts-grid');
+        const viewModal = document.getElementById('view-contact-modal');
+        const detailsContent = document.getElementById('contact-details-content');
+        
+        const searchInput = document.getElementById('contact-search');
+        const filterStatus = document.getElementById('filter-status');
+        const prevBtn = document.getElementById('prev-page');
+        const nextBtn = document.getElementById('next-page');
+        const pageInfo = document.getElementById('page-info');
+
+        // Global State
+        let allContacts = [];
+        let filteredContacts = [];
+        let currentPage = 1;
+        const itemsPerPage = 8;
+
+        // --- COUNTER LOGIC ---
+        function updateCounters() {
+            const counts = { 'New': 0, 'Warm': 0, 'Active': 0, 'Inactive': 0 };
+
+            allContacts.forEach(c => {
+                const status = c.relationship_status || 'New';
+                if (counts.hasOwnProperty(status)) {
+                    counts[status]++;
+                }
+            });
+
+            document.querySelector('#counter-new .count').innerText = counts['New'];
+            document.querySelector('#counter-warm .count').innerText = counts['Warm'];
+            document.querySelector('#counter-active .count').innerText = counts['Active'];
+            document.querySelector('#counter-inactive .count').innerText = counts['Inactive'];
+        }
+
+        // --- LOAD DATA ---
+        async function loadContacts() {
+            try {
+                const res = await fetch('/api/contacts');
+                if (!res.ok) throw new Error(`Server error: ${res.status}`);
+                allContacts = await res.json();
+                
+                updateCounters();
+                applyFilters(); 
+            } catch (err) {
+                console.error('Error loading contacts:', err);
+                contactsGrid.innerHTML = `<p style="padding: 20px; color: red;">Could not load contacts.</p>`;
+            }
+        }
+
+        // --- FILTER & PAGINATION LOGIC ---
+        function applyFilters() {
+            const searchTerm = searchInput.value.toLowerCase();
+            const statusTerm = filterStatus.value;
+
+            filteredContacts = allContacts.filter(c => {
+                const fullName = `${c.firstname} ${c.lastname}`.toLowerCase();
+                const matchesSearch = fullName.includes(searchTerm) || 
+                                     (c.company && c.company.toLowerCase().includes(searchTerm)) ||
+                                     (c.jobtitle && c.jobtitle.toLowerCase().includes(searchTerm));
+                
+                const matchesStatus = (statusTerm === 'All' || c.relationship_status === statusTerm);
+                return matchesSearch && matchesStatus;
+            });
+
+            currentPage = 1; 
+            renderGrid();
+        }
+
+        function renderGrid() {
+            const totalPages = Math.ceil(filteredContacts.length / itemsPerPage) || 1;
+            if (currentPage > totalPages) currentPage = totalPages;
+
+            const start = (currentPage - 1) * itemsPerPage;
+            const end = start + itemsPerPage;
+            const paginatedItems = filteredContacts.slice(start, end);
+
+            renderCards(paginatedItems);
+
+            pageInfo.innerText = `Page ${currentPage} of ${totalPages}`;
+            prevBtn.disabled = (currentPage === 1);
+            nextBtn.disabled = (currentPage === totalPages);
+        }
+
+        // --- RENDERING ---
+        function renderCards(contacts) {
+            contactsGrid.innerHTML = ''; 
+            if (contacts.length === 0) {
+                contactsGrid.innerHTML = '<p style="padding: 20px;">No contacts found matching your criteria.</p>';
+                return;
+            }
+
+            contacts.forEach(c => {
+                const initials = ((c.firstname?.[0] || '') + (c.lastname?.[0] || '')).toUpperCase() || '👤';
+                const card = document.createElement('div');
+                card.className = 'contact-card';
+                card.style.cursor = 'pointer';
+                card.onclick = () => showDetails(c);
+
+                card.innerHTML = `
+                    <div class="contact-card-header">
+                        <div class="contact-avatar-circle">${initials}</div>
+                        <div class="contact-main-info">
+                            <h3>${c.firstname} ${c.lastname}</h3>
+                            <p class="role">${c.jobtitle || 'No Job Title'}</p>
+                            <p class="company">${c.company || 'No Company'}</p>
+                        </div>
+                    </div>
+                    <div class="contact-card-body">
+                        <p><span class="icon">✉️</span> ${c.email || '—'}</p>
+                        <p><span class="icon">🏷️</span> <strong>${c.relationship_status || 'New'}</strong></p>
+                    </div>
+                `;
+                contactsGrid.appendChild(card);
+            });
+        }
+
+        // --- ACTIONS ---
+        function showDetails(c) {
+            detailsContent.innerHTML = `
+                <div class="details-view">
+                    <p><strong>Name:</strong> ${c.firstname} ${c.lastname}</p>
+                    <p><strong>Job Title:</strong> ${c.jobtitle || '—'}</p>
+                    <p><strong>Company:</strong> ${c.company || '—'}</p>
+                    <p><strong>Status:</strong> ${c.relationship_status || 'New'}</p>
+                    <p><strong>Email:</strong> ${c.email || '—'}</p>
+                    <p><strong>Phone:</strong> ${c.phone || '—'}</p>
+                    <p><strong>LinkedIn:</strong> <a href="${c.linkedin}" target="_blank">${c.linkedin || 'No link'}</a></p>
+                    <div style="margin-top:15px; padding-top:10px; border-top: 1px solid #eee;">
+                        <p><strong>Notes:</strong></p>
+                        <p style="white-space: pre-wrap; color: #666;">${c.notes || 'No notes available.'}</p>
+                    </div>
+                    <div style="margin-top: 20px; display: flex; gap: 10px;">
+                        <button onclick='openEditModal(${JSON.stringify(c)})' class="purple-btn" style="flex: 1;">Edit</button>
+                        <button onclick="deleteContact(${c.id})" class="btn-discard" style="flex: 1; background: #ff4d4d; color: white;">Delete</button>
+                    </div>
+                </div>
+            `;
+            viewModal.classList.remove('hidden');
+        }
+
+        async function deleteContact(id) {
+            if (!confirm('Are you sure you want to delete this contact?')) return;
+            try {
+                const res = await fetch(`/api/contacts/${id}`, { method: 'DELETE' });
+                if (res.ok) {
+                    viewModal.classList.add('hidden');
+                    loadContacts();
+                }
+            } catch (err) { alert('Failed to delete contact'); }
+        }
+
+        function openEditModal(c) {
+            viewModal.classList.add('hidden');
+            contactModal.classList.remove('hidden');
+            document.querySelector('#contact-modal h2').innerText = "Edit Contact";
+            
+            document.getElementById('contact-id').value = c.id;
+            contactForm.firstname.value = c.firstname || '';
+            contactForm.lastname.value = c.lastname || '';
+            contactForm.jobtitle.value = c.jobtitle || '';
+            contactForm.company.value = c.company || '';
+            contactForm.relationship_status.value = c.relationship_status || 'New';
+            contactForm.email.value = c.email || '';
+            contactForm.phone.value = c.phone || '';
+            contactForm.linkedin.value = c.linkedin || '';
+            contactForm.notes.value = c.notes || '';
+        }
+
+        contactForm.onsubmit = async (e) => {
+            e.preventDefault();
+            const formData = new FormData(contactForm);
+            const data = Object.fromEntries(formData.entries());
+            const id = document.getElementById('contact-id').value;
+
+            const method = id ? 'PUT' : 'POST';
+            const url = id ? `/api/contacts/${id}` : '/api/contacts';
+
+            try {
+                const response = await fetch(url, {
+                    method: method,
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(data)
+                });
+
+                if (response.ok) {
+                    contactModal.classList.add('hidden');
+                    contactForm.reset();
+                    loadContacts();
+                }
+            } catch (err) { alert('Could not save contact.'); }
+        };
+
+        // Event Listeners
+        document.getElementById('btn-add-contact').onclick = () => {
+            document.getElementById('contact-id').value = '';
+            document.querySelector('#contact-modal h2').innerText = "Save New Contact";
+            contactForm.reset();
+            contactModal.classList.remove('hidden');
+        };
+
+        document.querySelectorAll('.modal-close').forEach(btn => btn.onclick = () => contactModal.classList.add('hidden'));
+        document.querySelector('.view-modal-close').onclick = () => viewModal.classList.add('hidden');
+
+        searchInput.oninput = applyFilters;
+        filterStatus.onchange = applyFilters;
+
+        prevBtn.onclick = () => { if(currentPage > 1) { currentPage--; renderGrid(); } };
+        nextBtn.onclick = () => { 
+            const totalPages = Math.ceil(filteredContacts.length / itemsPerPage);
+            if(currentPage < totalPages) { currentPage++; renderGrid(); } 
+        };
+
+        // Click a counter to filter by that status
+        document.querySelectorAll('.status-pill').forEach(pill => {
+            pill.onclick = () => {
+                const status = pill.querySelector('.label').innerText; 
+                // Convert uppercase label "WARM" to "Warm" to match dropdown values
+                const formatted = status.charAt(0).toUpperCase() + status.slice(1).toLowerCase();
+                filterStatus.value = formatted;
+                applyFilters();
+            };
+        });
+
+        window.onload = loadContacts;
+    </script>
+    <script src="assets/js/partials.js" defer></script>
+</body>
 </html>
